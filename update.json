@@ -1,6 +1,17 @@
 {
   "package": {
-    "downloadUrl": "https://github.com/alex-rek/SingeeIche/releases/download/v0.1.4/SingeeIche_0.1.4_universal.apk"
+    "downloadUrl": "https://github.com/alex-rek/SingeeIche/releases/download/v0.1.5/SingeeIche_0.1.5_universal.apk"
+  },
+  "0.1.5": {
+    "versionCode": 6,
+    "changelog": [
+      "Updated the launcher icon and branding to the red SingeeIche identity.",
+      "Translated all Settings labels and options, including nested pages, into Russian."
+    ],
+    "changelog_ru": [
+      "Обновлены значок приложения и фирменный стиль SingeeIche в красных цветах.",
+      "Переведены на русский все названия и параметры настроек, включая вложенные разделы."
+    ]
   },
   "0.1.4": {
     "versionCode": 5,
