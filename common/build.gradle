@@ -69,6 +69,10 @@ dependencies {
 
     implementation 'androidx.browser:browser:' + browserXVersion
 
+    // On-device video title/description translation (models downloaded on demand).
+    implementation 'com.google.mlkit:translate:17.0.3'
+    implementation 'com.google.mlkit:language-id:17.0.6'
+
     implementation 'androidx.core:core-ktx:' + kotlinCoreXVersion
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:' + kotlinxVersion
 

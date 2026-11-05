@@ -63,6 +63,13 @@
   <string name="mobile_settings_language">Язык интерфейса</string>
   <string name="mobile_settings_video_language">Язык видео</string>
   <string name="mobile_settings_video_language_default">Автоматически (%1$s)</string>
+  <string name="mobile_settings_translation_group">Перевод видео</string>
+  <string name="mobile_settings_translate_metadata">Переводить названия и описания видео</string>
+  <string name="mobile_settings_translate_metadata_summary">Перевод выполняется на устройстве. Модели загружаются по Wi-Fi.</string>
+  <string name="mobile_settings_translation_language">Язык перевода</string>
+  <string name="mobile_settings_translation_auto">Язык интерфейса (%1$s)</string>
+  <string name="mobile_settings_translation_original">Показывать оригинал</string>
+  <string name="mobile_settings_translation_original_summary">Временно показывать исходный текст вместо перевода</string>
   <string name="mobile_settings_country">Страна</string>
   <string name="mobile_settings_start_screen">Начальный экран</string>
   <string name="mobile_settings_interface_size">Размер интерфейса</string>

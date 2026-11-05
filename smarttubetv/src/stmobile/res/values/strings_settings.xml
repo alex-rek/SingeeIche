@@ -64,6 +64,13 @@
     <string name="mobile_settings_voice_search_summary">Opening Search starts listening</string>
     <string name="mobile_settings_24_hour">Use 24-hour time</string>
     <string name="mobile_settings_24_hour_summary">For the start times of premieres and live streams</string>
+    <string name="mobile_settings_translation_group">Video translation</string>
+    <string name="mobile_settings_translate_metadata">Translate video titles and descriptions</string>
+    <string name="mobile_settings_translate_metadata_summary">Translated on this device. Translation models download over Wi-Fi.</string>
+    <string name="mobile_settings_translation_language">Translation language</string>
+    <string name="mobile_settings_translation_auto">Interface language (%1$s)</string>
+    <string name="mobile_settings_translation_original">Show original text</string>
+    <string name="mobile_settings_translation_original_summary">Temporarily show the original instead of its translation</string>
 
     <!-- Tabs and feeds -->
     <string name="mobile_settings_tabs">Tabs</string>

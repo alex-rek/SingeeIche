@@ -19,6 +19,8 @@ import com.liskovsoft.smartyoutubetv2.common.misc.VideoDownloads;
 import com.liskovsoft.smartyoutubetv2.common.prefs.GeneralData;
 import com.liskovsoft.smartyoutubetv2.common.prefs.MainUIData;
 import com.liskovsoft.smartyoutubetv2.common.prefs.SearchData;
+import com.liskovsoft.smartyoutubetv2.common.prefs.VideoTranslationData;
+import com.liskovsoft.smartyoutubetv2.common.misc.VideoMetadataTranslation;
 import com.liskovsoft.smartyoutubetv2.common.utils.ClickbaitRemover;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.liskovsoft.youtubeapi.service.internal.MediaServiceData;
@@ -70,6 +72,34 @@ final class AppPages {
                 context.getString(R.string.mobile_settings_language)).needsRestart());
         rows.add(SettingsRow.fromRadio(language.createCountryCategory(),
                 context.getString(R.string.mobile_settings_country)).needsRestart());
+
+        VideoTranslationData translation = VideoTranslationData.instance(context);
+        rows.add(SettingsRow.header(context.getString(R.string.mobile_settings_translation_group)));
+        rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_translate_metadata),
+                context.getString(R.string.mobile_settings_translate_metadata_summary),
+                translation::isEnabled, enabled -> {
+                    translation.setEnabled(enabled);
+                    BrowsePresenter.instance(context).refresh();
+                }));
+        SettingsRow.Choice<String> translationLanguage = SettingsRow.choice(
+                context.getString(R.string.mobile_settings_translation_language));
+        Locale displayLocale = context.getResources().getConfiguration().getLocales().get(0);
+        String uiLanguage = displayLocale.getDisplayLanguage(displayLocale);
+        translationLanguage.option(context.getString(R.string.mobile_settings_translation_auto, uiLanguage), "");
+        for (String code : VideoMetadataTranslation.supportedLanguageCodes()) {
+            Locale locale = Locale.forLanguageTag(code);
+            translationLanguage.option(locale.getDisplayName(displayLocale), code);
+        }
+        rows.add(translationLanguage.bind(translation::getLanguage, code -> {
+            translation.setLanguage(code);
+            BrowsePresenter.instance(context).refresh();
+        }).enabledWhen(translation::isEnabled));
+        rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_translation_original),
+                context.getString(R.string.mobile_settings_translation_original_summary),
+                translation::isShowOriginal, showOriginal -> {
+                    translation.setShowOriginal(showOriginal);
+                    BrowsePresenter.instance(context).refresh();
+                }).enabledWhen(translation::isEnabled));
 
         rows.add(startScreen(context));
 

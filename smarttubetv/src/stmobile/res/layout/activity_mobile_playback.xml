@@ -1200,4 +1200,19 @@
 
     </com.newtube.mobile.ui.playback.WatchRootLayout>
 
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/mobile_shorts_bottom_nav"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="?attr/newtubeColorBackground"
+        android:visibility="gone"
+        app:itemIconSize="24dp"
+        app:itemIconTint="@color/mobile_bottom_nav_item"
+        app:itemTextAppearanceActive="@style/MobileBottomNavText"
+        app:itemTextAppearanceInactive="@style/MobileBottomNavText"
+        app:itemTextColor="@color/mobile_bottom_nav_item"
+        app:labelVisibilityMode="labeled"
+        app:paddingBottomSystemWindowInsets="true" />
+
 </com.newtube.mobile.ui.playback.PlayerContainerLayout>

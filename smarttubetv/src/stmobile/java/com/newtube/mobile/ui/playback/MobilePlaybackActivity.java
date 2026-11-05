@@ -63,6 +63,7 @@ import com.bumptech.glide.load.DecodeFormat;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.liskovsoft.smartyoutubetv2.tv.BuildConfig;
 import com.liskovsoft.mediaserviceinterfaces.LiveChatService;
@@ -89,6 +90,7 @@ import com.liskovsoft.mediaserviceinterfaces.data.PlaylistInfo;
 import com.liskovsoft.smartyoutubetv2.common.app.models.data.Video;
 import com.liskovsoft.smartyoutubetv2.common.app.models.data.VideoGroup;
 import com.liskovsoft.smartyoutubetv2.common.app.models.playback.QueuePlaybackMode;
+import com.liskovsoft.smartyoutubetv2.common.app.models.playback.controllers.VideoLoaderController;
 import com.liskovsoft.smartyoutubetv2.common.app.models.playback.manager.PlayerConstants;
 import com.liskovsoft.smartyoutubetv2.common.app.models.playback.service.VideoStateService;
 import com.liskovsoft.smartyoutubetv2.common.app.models.playback.service.VideoStateService.State;
@@ -118,12 +120,14 @@ import com.newtube.mobile.player.ShortsPlaybackSession;
 import com.liskovsoft.smartyoutubetv2.common.prefs.GeneralData;
 import com.liskovsoft.smartyoutubetv2.common.prefs.MainUIData;
 import com.liskovsoft.smartyoutubetv2.common.prefs.PlayerData;
+import com.liskovsoft.smartyoutubetv2.common.prefs.VideoTranslationData;
 import com.liskovsoft.smartyoutubetv2.common.prefs.PlayerTweaksData;
 import com.liskovsoft.smartyoutubetv2.common.utils.AppDialogUtil;
 import com.liskovsoft.smartyoutubetv2.common.utils.ClickbaitRemover;
 import com.liskovsoft.smartyoutubetv2.common.utils.Utils;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.liskovsoft.smartyoutubetv2.common.misc.VideoDownloads;
+import com.liskovsoft.smartyoutubetv2.common.misc.VideoMetadataTranslation;
 import com.newtube.mobile.downloads.DownloadItem;
 import com.newtube.mobile.downloads.DownloadMenu;
 import com.newtube.mobile.downloads.DownloadOption;
@@ -184,6 +188,7 @@ public class MobilePlaybackActivity extends MobileActivity
     private PinchZoomLayout mVideoArea;
     private boolean mShortsMode;
     private boolean mShortsOwnsFullscreen;
+    @Nullable private BottomNavigationView mShortsBottomNav;
     private TextView mZoomHintView;
     private DoubleTapPlayerViewImpl mPlayerView;
     private YouTubeOverlay mYouTubeOverlay;
@@ -353,6 +358,7 @@ public class MobilePlaybackActivity extends MobileActivity
 
     private Video mWatchVideo;
     private String mWatchVideoId;
+    private String mWatchDescriptionSource;
     private boolean mDescriptionExpanded;
 
     /**
@@ -671,6 +677,20 @@ public class MobilePlaybackActivity extends MobileActivity
     private void bindViews() {
         mContainer = findViewById(R.id.mobile_player_container);
         mVideoArea = findViewById(R.id.mobile_video_area);
+        mShortsBottomNav = findViewById(R.id.mobile_shorts_bottom_nav);
+        if (mShortsBottomNav != null) {
+            mShortsBottomNav.getMenu().add(0, 1, 0, R.string.header_home).setIcon(R.drawable.ic_nav_home);
+            mShortsBottomNav.getMenu().add(0, 2, 1, R.string.header_shorts).setIcon(R.drawable.ic_nav_subscriptions);
+            mShortsBottomNav.getMenu().add(0, 3, 2, R.string.mobile_nav_download).setIcon(R.drawable.ic_nav_downloads);
+            mShortsBottomNav.getMenu().add(0, 4, 3, R.string.mobile_nav_you).setIcon(R.drawable.ic_nav_you);
+            mShortsBottomNav.setSelectedItemId(2);
+            mShortsBottomNav.setOnItemSelectedListener(item -> {
+                if (item.getItemId() != 2) {
+                    finish();
+                }
+                return true;
+            });
+        }
         mZoomHintView = findViewById(R.id.mobile_player_zoom_hint);
         mPlayerView = findViewById(R.id.mobile_player_view);
         // NEWTUBE(seek bar): the video box leaves its children unclipped so that the seek bar's dot
@@ -918,6 +938,7 @@ public class MobilePlaybackActivity extends MobileActivity
                     Video next = ShortsPlaybackSession.move(deltaY < 0 ? 1 : -1);
                     if (next != null) {
                         if (mPresenter != null) {
+                            animateShortsSwitch(deltaY < 0 ? -1 : 1);
                             mPresenter.openVideo(next);
                         }
                     }
@@ -7833,7 +7854,7 @@ public class MobilePlaybackActivity extends MobileActivity
             mWatchSubs.setVisibility(View.VISIBLE);
         }
         if (!TextUtils.isEmpty(item.description)) {
-            mWatchDescription.setText(item.description);
+            setWatchDescription(item.description);
         }
     }
 
@@ -7841,6 +7862,7 @@ public class MobilePlaybackActivity extends MobileActivity
         mDescriptionExpanded = false;
         mWatchDescription.setVisibility(View.GONE);
         mWatchDescription.setText(null);
+        mWatchDescriptionSource = null;
         mWatchMeta.setText(null);
         mWatchMeta.setMaxLines(1);
         mWatchLikeCount.setText(R.string.mobile_watch_count_placeholder);
@@ -7872,6 +7894,29 @@ public class MobilePlaybackActivity extends MobileActivity
         RxHelper.disposeActions(mLiveChatAction);
         mLiveChatAction = null;
         mChatReceiver = null;
+    }
+
+    private void setWatchDescription(String description) {
+        if (TextUtils.isEmpty(description)) {
+            return;
+        }
+        mWatchDescriptionSource = description;
+        final String videoId = mWatchVideoId;
+        Video current = mPresenter != null ? mPresenter.getVideo() : null;
+        String displayed = current != null && TextUtils.equals(current.description, description)
+                ? current.getDisplayDescription() : description;
+        mWatchDescription.setText(displayed);
+        if (!VideoTranslationData.isTranslationEnabled() || VideoTranslationData.isShowingOriginal()) {
+            return;
+        }
+        VideoMetadataTranslation.translate(this, description, translated -> {
+            if (Helpers.equals(videoId, mWatchVideoId)
+                    && TextUtils.equals(mWatchDescriptionSource, description)
+                    && VideoTranslationData.isTranslationEnabled()
+                    && !VideoTranslationData.isShowingOriginal()) {
+                mWatchDescription.setText(translated);
+            }
+        });
     }
 
     @Override
@@ -7962,7 +8007,7 @@ public class MobilePlaybackActivity extends MobileActivity
 
             String description = metadata.getDescription();
             if (!TextUtils.isEmpty(description)) {
-                mWatchDescription.setText(description);
+                setWatchDescription(description);
             }
 
             if (!TextUtils.isEmpty(metadata.getAuthor())) {
@@ -9033,6 +9078,10 @@ public class MobilePlaybackActivity extends MobileActivity
         boolean inShortsSession = ShortsPlaybackSession.contains(item);
         if (inShortsSession) {
             mShortsMode = true;
+            if (mShortsBottomNav != null) mShortsBottomNav.setVisibility(View.VISIBLE);
+            if (mPresenter != null) {
+                mPresenter.getController(VideoLoaderController.class).preloadVideo(ShortsPlaybackSession.peekNext());
+            }
             if (!mShortsOwnsFullscreen && getResources().getConfiguration().orientation
                     == Configuration.ORIENTATION_PORTRAIT
                     && layoutOrientation() != Configuration.ORIENTATION_LANDSCAPE) {
@@ -9042,12 +9091,22 @@ public class MobilePlaybackActivity extends MobileActivity
             requestMoreShortsIfNearEnd();
         } else if (mShortsMode) {
             mShortsMode = false;
+            if (mShortsBottomNav != null) mShortsBottomNav.setVisibility(View.GONE);
             ShortsPlaybackSession.clear();
             if (mShortsOwnsFullscreen) {
                 mShortsOwnsFullscreen = false;
                 setLayoutOverride(Configuration.ORIENTATION_UNDEFINED);
             }
         }
+    }
+
+    private void animateShortsSwitch(int exitDirection) {
+        if (mVideoArea == null || mVideoArea.getHeight() <= 0) return;
+        mVideoArea.animate().cancel();
+        int distance = mVideoArea.getHeight();
+        mVideoArea.setTranslationY(-exitDirection * distance);
+        mVideoArea.animate().translationY(0f).setDuration(230)
+                .setInterpolator(new DecelerateInterpolator()).start();
     }
 
     private void requestMoreShortsIfNearEnd() {

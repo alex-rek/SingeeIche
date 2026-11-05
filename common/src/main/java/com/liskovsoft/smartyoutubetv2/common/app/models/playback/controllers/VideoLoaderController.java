@@ -4,6 +4,8 @@ import android.os.Build.VERSION;
 import android.os.SystemClock;
 import android.text.TextUtils;
 
+import androidx.annotation.Nullable;
+
 import com.liskovsoft.mediaserviceinterfaces.MediaItemService;
 import com.liskovsoft.mediaserviceinterfaces.data.MediaFormat;
 import com.liskovsoft.mediaserviceinterfaces.data.MediaItemFormatInfo;
@@ -1116,6 +1118,23 @@ public class VideoLoaderController extends BasePlayerController {
                         + " retry=" + (mNextPrefetchLedger.canRetry(generation, nextId) ? "y" : "n"));
             });
         }
+    }
+
+    /** Eagerly warms the next item in a swipe-driven Shorts queue. */
+    public void preloadVideo(@Nullable Video next) {
+        if (next == null || next.videoId == null || getPlayer() == null || getVideo() == null) return;
+        Video currentVideo = getVideo();
+        long generation = mPlaybackGeneration;
+        String nextId = next.videoId;
+        if (!mNextPrefetchLedger.tryStart(generation, nextId, SystemClock.elapsedRealtime())) return;
+        loadNextFormatInfo(next, formatInfo -> {
+            mNextPrefetchLedger.onSuccess(generation, nextId, SystemClock.elapsedRealtime());
+            if (getVideo() != currentVideo || mPlaybackGeneration != generation) return;
+            PlaybackView player = getPlayer();
+            if (player != null && formatInfo != null && wouldOpenPlainDash(formatInfo)) {
+                player.prebuildNextSource(formatInfo);
+            }
+        }, error -> mNextPrefetchLedger.onFailure(generation, nextId, SystemClock.elapsedRealtime()));
     }
 
     /** The autoplay-next resolution itself; a seam so the deadline logic is testable offline. */

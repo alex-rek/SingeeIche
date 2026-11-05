@@ -24,6 +24,7 @@ import com.liskovsoft.smartyoutubetv2.common.app.models.playback.service.VideoSt
 import com.liskovsoft.smartyoutubetv2.common.misc.PhoneUi;
 import com.liskovsoft.smartyoutubetv2.common.prefs.BlockedChannelData;
 import com.liskovsoft.smartyoutubetv2.common.prefs.PlayerTweaksData;
+import com.liskovsoft.smartyoutubetv2.common.prefs.VideoTranslationData;
 import com.liskovsoft.googlecommon.common.helpers.ServiceHelper;
 import com.liskovsoft.googlecommon.common.helpers.YouTubeHelper;
 
@@ -44,6 +45,11 @@ public final class Video {
     public String title;
     public String deArrowTitle; // DeArrow's crowd-sourced title (wins over everything)
     public String unlocalizedTitle; // NEWTUBE(#45): the uploader's title, untranslated (Original titles)
+    public String translatedTitle;
+    public String translatedDescription;
+    public String translatedTitleSource;
+    public String translationTitleKey;
+    public String translationDescriptionKey;
     public CharSequence secondTitle;
     private String metadataTitle;
     private CharSequence metadataSecondTitle;
@@ -315,12 +321,39 @@ public final class Video {
     }
 
     public String getTitle() {
-        return deArrowTitle != null ? deArrowTitle : unlocalizedTitle != null ? unlocalizedTitle : title;
+        String original = getOriginalTitleForTranslation();
+        if (VideoTranslationData.isTranslationEnabled() && !VideoTranslationData.isShowingOriginal()
+                && translatedTitle != null && translatedTitleSource != null
+                && translatedTitleSource.equals(original)) {
+            return translatedTitle;
+        }
+        return original;
     }
 
     public String getTitleFull() {
-        return deArrowTitle != null ? deArrowTitle : unlocalizedTitle != null ? unlocalizedTitle
-                : metadataTitle != null ? metadataTitle : title;
+        String original = getOriginalTitleForTranslation();
+        if (original == null) {
+            original = metadataTitle;
+        }
+        if (VideoTranslationData.isTranslationEnabled() && !VideoTranslationData.isShowingOriginal()
+                && translatedTitle != null && translatedTitleSource != null
+                && translatedTitleSource.equals(original)) {
+            return translatedTitle;
+        }
+        return original;
+    }
+
+    /** The best available source title before on-device translation. */
+    public String getOriginalTitleForTranslation() {
+        return deArrowTitle != null ? deArrowTitle : unlocalizedTitle != null ? unlocalizedTitle : title;
+    }
+
+    public String getDisplayDescription() {
+        if (VideoTranslationData.isTranslationEnabled() && !VideoTranslationData.isShowingOriginal()
+                && translatedDescription != null) {
+            return translatedDescription;
+        }
+        return description;
     }
 
     public CharSequence getSecondTitle() {

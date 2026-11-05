@@ -1,6 +1,17 @@
 {
   "package": {
-    "downloadUrl": "https://github.com/alex-rek/SingeeIche/releases/download/v0.1.5/SingeeIche_0.1.5_universal.apk"
+    "downloadUrl": "https://github.com/alex-rek/SingeeIche/releases/download/v0.1.6/SingeeIche_0.1.6_universal.apk"
+  },
+  "0.1.6": {
+    "versionCode": 7,
+    "changelog": [
+      "Added on-device translation for video titles and descriptions.",
+      "Shorts keeps bottom navigation visible, preloads the next video, and slides vertically between clips."
+    ],
+    "changelog_ru": [
+      "Добавлен перевод названий и описаний видео на устройстве.",
+      "В Shorts нижняя панель остаётся видимой, следующее видео загружается заранее, а переключение сопровождается вертикальным слайдом."
+    ]
   },
   "0.1.5": {
     "versionCode": 6,

@@ -36,4 +36,5 @@
     <string name="mobile_settings_search_kw_diagnostic_log">ошибка журнал лог диагностика отладка</string>
     <string name="mobile_settings_search_kw_gesture_levels">жесты яркость громкость</string>
     <string name="mobile_settings_search_kw_gesture_seek">жесты перемотка вперёд назад</string>
+    <string name="mobile_settings_search_kw_translate_metadata">перевод переводить название описание видео оригинал язык</string>
 </resources>

@@ -15,6 +15,7 @@ public class BrowseProcessorManager implements BrowseProcessor {
         // combine in Video.getTitle(): DeArrow's, else the original, else YouTube's.
         mProcessors.add(new DeArrowProcessor(context, onItemReady));
         mProcessors.add(new UnlocalizedTitleProcessor(context, onItemReady));
+        mProcessors.add(new VideoTranslationProcessor(context, onItemReady));
     }
 
     @Override

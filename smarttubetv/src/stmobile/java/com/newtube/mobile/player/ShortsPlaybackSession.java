@@ -57,6 +57,12 @@ public final class ShortsPlaybackSession {
     }
 
     @Nullable
+    public static synchronized Video peekNext() {
+        int next = sCurrentIndex + 1;
+        return sActive && next >= 0 && next < VIDEOS.size() ? VIDEOS.get(next) : null;
+    }
+
+    @Nullable
     public static synchronized Video last() {
         return VIDEOS.isEmpty() ? null : VIDEOS.get(VIDEOS.size() - 1);
     }
