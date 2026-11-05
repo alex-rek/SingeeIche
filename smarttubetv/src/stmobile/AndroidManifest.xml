@@ -110,6 +110,22 @@
             android:screenOrientation="unspecified"
             android:theme="@style/Theme.NewTube" />
 
+        <activity
+            android:name="com.newtube.mobile.peertube.PeerTubeActivity"
+            android:exported="false"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|layoutDirection|keyboardHidden|uiMode"
+            android:screenOrientation="unspecified"
+            android:theme="@style/Theme.NewTube" />
+
+        <activity
+            android:name="com.newtube.mobile.peertube.PeerTubePlayerActivity"
+            android:exported="false"
+            android:launchMode="singleTop"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|layoutDirection|keyboardHidden|uiMode"
+            android:screenOrientation="user"
+            android:supportsPictureInPicture="true"
+            android:theme="@style/Theme.NewTube.Player" />
+
         <!--
           Touch player (Wave 2). configChanges covers orientation/screenSize/keyboardHidden so
           the Activity (and the live ExoPlayer instance it holds) survives device rotation
@@ -141,6 +157,11 @@
         -->
         <service
             android:name="com.newtube.mobile.ui.playback.MobilePlaybackService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
+
+        <service
+            android:name="com.newtube.mobile.peertube.PeerTubePlaybackService"
             android:exported="false"
             android:foregroundServiceType="mediaPlayback" />
 

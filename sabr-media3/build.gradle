@@ -31,7 +31,9 @@ dependencies {
 
 // Same pinned compiler as the isolated proof. Generated classes are build artifacts only.
 configurations { sabrProtoc }
-dependencies { sabrProtoc 'com.google.protobuf:protoc:3.22.3:linux-x86_64@exe' }
+def protocClassifier = System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')
+        ? 'windows-x86_64' : 'linux-x86_64'
+dependencies { sabrProtoc "com.google.protobuf:protoc:3.22.3:${protocClassifier}@exe" }
 def protoRoot = file('src/main/proto')
 def generatedJava = layout.buildDirectory.dir('generated/sabr/java')
 abstract class GenerateSabrProto extends Exec {

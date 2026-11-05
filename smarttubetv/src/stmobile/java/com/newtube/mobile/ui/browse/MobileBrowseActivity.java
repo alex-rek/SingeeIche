@@ -58,6 +58,7 @@ import com.newtube.mobile.downloads.DownloadItem;
 import com.newtube.mobile.downloads.DownloadMenu;
 import com.newtube.mobile.downloads.DownloadRegistry;
 import com.newtube.mobile.downloads.DownloadsBridge;
+import com.newtube.mobile.peertube.PeerTubeActivity;
 import com.newtube.mobile.SessionWarmup;
 import com.newtube.mobile.casting.CastPickerLauncher;
 import com.newtube.mobile.casting.CastSessionManager;
@@ -1103,6 +1104,8 @@ public class MobileBrowseActivity extends MobileActivity
         }
 
         addYouDivider();
+        addYouRow(0, getString(R.string.mobile_peertube_entry),
+                () -> startActivity(new Intent(this, PeerTubeActivity.class)));
         addYouRow(R.drawable.ic_mobile_settings, getString(R.string.header_settings),
                 this::openSettings);
     }

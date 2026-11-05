@@ -48,7 +48,7 @@ abstract class CopyRenamedApks extends DefaultTask {
         builtArtifacts.elements.each { artifact ->
             def abi = artifact.filters.find { it.filterType.toString() == 'ABI' }?.identifier ?: 'universal'
             def version = artifact.versionName ?: 'unknown'
-            def outputFile = new File(outputDirectory, "NewTube_${version}_${nameTag.get()}${abi}.apk")
+            def outputFile = new File(outputDirectory, "SingeeIche_${version}_${nameTag.get()}${abi}.apk")
             Files.copy(new File(artifact.outputFile).toPath(), outputFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
         }
     }
@@ -171,7 +171,8 @@ android {
         buildConfigField "boolean", "BENCHMARK", "false"
         // NEWTUBE(fdroid): -Pfdroid turns the in-app updater off - F-Droid delivers the updates, and
         // its inclusion policy forbids self-updates that aren't an explicit opt-in.
-        buildConfigField "boolean", "IN_APP_UPDATES", project.hasProperty('fdroid') ? "false" : "true"
+        // SingeeIche has no release feed yet. Keep the inherited updater off until it has one.
+        buildConfigField "boolean", "IN_APP_UPDATES", "false"
 
         // The content of Universal apk
         ndk {
@@ -303,19 +304,12 @@ android {
     // flavor so its source set (src/stmobile/) keeps applying without a directory move.
     productFlavors {
         stmobile {
-            // Brand-neutral, GitHub-verifiable applicationId (io.github.<user>.*) chosen so the
-            // package name never has to change if the app is ever renamed — "arc" ties to the
-            // arch-"n" launcher mark (Catalan for "arch"). This ID is permanent once released;
-            // do not couple it to the marketing name. See docs/gtm + the legal-risk memo.
-            applicationId "io.github.aleixrodriala.arc"
+            // Keep SingeeIche installable alongside SmartTube and its source fork.
+            applicationId "app.singeiche.mobile"
             minSdk = 24 // media3 1.10.x floor is 23; 24 = project-wide minimum
             targetSdk = project.ext.targetSdkVersion
-            // NewTube versions independently of upstream SmartTube (defaultConfig carries the
-            // fork-point 31.97/2387). versionCode starts at 10000 - above upstream's code so
-            // existing test installs upgrade in place - and encodes the version:
-            // 1.0.0 -> 10000, 1.0.1 -> 10001, 1.1.0 -> 10100, 2.0.0 -> 20000.
-            versionCode 11701
-            versionName "1.17.1"
+            versionCode 1
+            versionName "0.1.0"
         }
     }
 }
@@ -410,6 +404,11 @@ dependencies {
     stmobileImplementation 'androidx.media3:media3-exoplayer-hls:' + media3Version
     stmobileImplementation 'androidx.media3:media3-datasource-okhttp:' + media3Version
     stmobileImplementation 'androidx.media3:media3-ui:' + media3Version
+    // PeerTube's federated search and server API (adapted from the local PeerIche project).
+    stmobileImplementation 'com.squareup.retrofit2:retrofit:' + retrofitVersion
+    stmobileImplementation 'com.squareup.retrofit2:converter-gson:' + retrofitVersion
+    stmobileImplementation 'com.google.code.gson:gson:' + gsonVersion
+    stmobileImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:' + kotlinxVersion
     // Cronet leaf transport for the media path (H2/QUIC, like the legacy engine had): our copy of
     // media3's CronetDataSource (player/cronet) on the embedded Cronet engine that :sharedutils
     // ships (CronetManager). The media3-datasource-cronet artifact is not used: F-Droid rejects the
