@@ -48,6 +48,7 @@ class Media3TrackAdapter {
     private Tracks mTracks = Tracks.EMPTY;
     /** NEWTUBE(mobile): default multi-audio videos to the untranslated ("original") track. */
     private boolean mPreferOriginalAudio;
+    @Nullable private String mPreferredAudioLanguage;
 
     Media3TrackAdapter(DefaultTrackSelector trackSelector) {
         mTrackSelector = trackSelector;
@@ -55,6 +56,10 @@ class Media3TrackAdapter {
 
     void setPreferOriginalAudio(boolean prefer) {
         mPreferOriginalAudio = prefer;
+    }
+
+    void setPreferredAudioLanguage(@Nullable String language) {
+        mPreferredAudioLanguage = TextUtils.isEmpty(language) ? null : language;
     }
 
     /** New source opened: stale (group-bound) overrides can't apply to the next video. */
@@ -92,7 +97,7 @@ class Media3TrackAdapter {
         // No explicit audio pick anywhere: steer media3's default to the untranslated track
         // (YouTube auto-dubs put the dubbed language first otherwise).
         if (mPreferOriginalAudio && mTargets[FormatItem.TYPE_AUDIO] == null) {
-            applyOriginalAudioDefault();
+            applyAudioLanguageDefault();
         }
     }
 
@@ -241,7 +246,7 @@ class Media3TrackAdapter {
             builder.clearOverridesOfType(C.TRACK_TYPE_AUDIO);
             mTrackSelector.setParameters(builder);
             if (mPreferOriginalAudio) {
-                applyOriginalAudioDefault();
+                applyAudioLanguageDefault();
             }
             return;
         }
@@ -256,7 +261,7 @@ class Media3TrackAdapter {
             // The persisted variant doesn't exist on this video at all: fall back to the
             // untranslated track rather than whatever adaptation set the manifest lists first.
             if (mPreferOriginalAudio) {
-                applyOriginalAudioDefault();
+                applyAudioLanguageDefault();
             }
         }
     }
@@ -280,6 +285,44 @@ class Media3TrackAdapter {
         }
 
         mTrackSelector.setParameters(builder);
+    }
+
+    /** Prefer the configured dub when this video has it; otherwise keep the original-language fallback. */
+    private void applyAudioLanguageDefault() {
+        if (TextUtils.isEmpty(mPreferredAudioLanguage)) {
+            applyOriginalAudioDefault();
+            return;
+        }
+
+        TrackLocation best = null;
+        int bestBitrate = Integer.MIN_VALUE;
+        for (Tracks.Group group : mTracks.getGroups()) {
+            if (group.getType() != C.TRACK_TYPE_AUDIO) {
+                continue;
+            }
+            for (int i = 0; i < group.length; i++) {
+                if (!group.isTrackSupported(i)) {
+                    continue;
+                }
+                String language = Media3FormatConverter.pickLanguage(group.getTrackFormat(i));
+                if (!audioLanguageEquals(mPreferredAudioLanguage, language)) {
+                    continue;
+                }
+                int bitrate = group.getTrackFormat(i).bitrate;
+                if (bitrate > bestBitrate) {
+                    bestBitrate = bitrate;
+                    best = new TrackLocation(group, i);
+                }
+            }
+        }
+
+        if (best == null) {
+            applyOriginalAudioDefault();
+        } else {
+            mTrackSelector.setParameters(mTrackSelector.buildUponParameters()
+                    .clearOverridesOfType(C.TRACK_TYPE_AUDIO)
+                    .setOverrideForType(new TrackSelectionOverride(best.group.getMediaTrackGroup(), best.trackIndex)));
+        }
     }
 
     /** No pick at all: default the audio to YouTube's untranslated ("original") variant. */

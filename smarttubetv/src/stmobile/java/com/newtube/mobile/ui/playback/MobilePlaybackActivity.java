@@ -96,6 +96,7 @@ import com.liskovsoft.smartyoutubetv2.common.app.models.playback.ui.ChatReceiver
 import com.liskovsoft.smartyoutubetv2.common.app.models.playback.ui.OptionCategory;
 import com.liskovsoft.smartyoutubetv2.common.app.models.playback.ui.SeekBarSegment;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.AppDialogPresenter;
+import com.liskovsoft.smartyoutubetv2.common.app.presenters.BrowsePresenter;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.ChannelPresenter;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.PlaybackPresenter;
 import com.liskovsoft.smartyoutubetv2.common.app.presenters.settings.SubtitleSettingsPresenter;
@@ -113,6 +114,7 @@ import com.newtube.mobile.player.Media3DebugInfoManager;
 import com.newtube.mobile.player.Media3PlayerController;
 import com.newtube.mobile.player.Media3PlayerInitializer;
 import com.newtube.mobile.player.Media3SubtitleManager;
+import com.newtube.mobile.player.ShortsPlaybackSession;
 import com.liskovsoft.smartyoutubetv2.common.prefs.GeneralData;
 import com.liskovsoft.smartyoutubetv2.common.prefs.MainUIData;
 import com.liskovsoft.smartyoutubetv2.common.prefs.PlayerData;
@@ -180,6 +182,8 @@ public class MobilePlaybackActivity extends MobileActivity
 
     private PlayerContainerLayout mContainer;
     private PinchZoomLayout mVideoArea;
+    private boolean mShortsMode;
+    private boolean mShortsOwnsFullscreen;
     private TextView mZoomHintView;
     private DoubleTapPlayerViewImpl mPlayerView;
     private YouTubeOverlay mYouTubeOverlay;
@@ -900,6 +904,27 @@ public class MobilePlaybackActivity extends MobileActivity
             @Override
             public void route(android.view.MotionEvent event) {
                 mPlayerView.onTouchEvent(event);
+            }
+        });
+        mVideoArea.setSwipeRouter(new PinchZoomLayout.SwipeRouter() {
+            @Override
+            public boolean isEnabled() {
+                return mShortsMode;
+            }
+
+            @Override
+            public void onSwipe(float deltaX, float deltaY) {
+                if (Math.abs(deltaY) > Math.abs(deltaX)) {
+                    Video next = ShortsPlaybackSession.move(deltaY < 0 ? 1 : -1);
+                    if (next != null) {
+                        if (mPresenter != null) {
+                            mPresenter.openVideo(next);
+                        }
+                    }
+                    requestMoreShortsIfNearEnd();
+                } else if (deltaX < 0) {
+                    openShortsChannel();
+                }
             }
         });
         // NEWTUBE(seek bar): the seek bar's touch band - YouTube's, ~20 dp above the track to 16 dp
@@ -8954,6 +8979,7 @@ public class MobilePlaybackActivity extends MobileActivity
 
     @Override
     public void setVideo(Video item) {
+        updateShortsMode(item);
         if (item != null && item.videoId != null) {
             SessionWarmup.onPlaybackRequested();
             if (!Helpers.equals(item.videoId, mWatchVideoId)) {
@@ -9000,6 +9026,44 @@ public class MobilePlaybackActivity extends MobileActivity
         if (item != null && item.videoId != null) {
             final String videoId = item.videoId;
             runOnUiThread(() -> maybeRouteVideoToCast(videoId));
+        }
+    }
+
+    private void updateShortsMode(@Nullable Video item) {
+        boolean inShortsSession = ShortsPlaybackSession.contains(item);
+        if (inShortsSession) {
+            mShortsMode = true;
+            if (!mShortsOwnsFullscreen && getResources().getConfiguration().orientation
+                    == Configuration.ORIENTATION_PORTRAIT
+                    && layoutOrientation() != Configuration.ORIENTATION_LANDSCAPE) {
+                mShortsOwnsFullscreen = true;
+                setLayoutOverride(Configuration.ORIENTATION_LANDSCAPE);
+            }
+            requestMoreShortsIfNearEnd();
+        } else if (mShortsMode) {
+            mShortsMode = false;
+            ShortsPlaybackSession.clear();
+            if (mShortsOwnsFullscreen) {
+                mShortsOwnsFullscreen = false;
+                setLayoutOverride(Configuration.ORIENTATION_UNDEFINED);
+            }
+        }
+    }
+
+    private void requestMoreShortsIfNearEnd() {
+        if (mShortsMode && ShortsPlaybackSession.requestContinuation()) {
+            Video last = ShortsPlaybackSession.last();
+            if (last != null) {
+                BrowsePresenter.instance(this).onScrollEnd(last);
+            }
+        }
+    }
+
+    private void openShortsChannel() {
+        Video video = ShortsPlaybackSession.current();
+        if (video != null && ChannelPresenter.canOpenChannel(video)) {
+            MiniPlayerBridge.prepareNavigation(this);
+            MediaServiceManager.chooseChannelPresenter(this, video);
         }
     }
 

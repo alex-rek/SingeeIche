@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
+import android.view.ViewConfiguration;
 import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
@@ -56,6 +57,7 @@ public class PinchZoomLayout extends FrameLayout {
 
     public PinchZoomLayout(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        mSwipeThreshold = Math.max(dp(48), ViewConfiguration.get(context).getScaledTouchSlop() * 3);
         mScaleDetector = new ScaleGestureDetector(context,
                 new ScaleGestureDetector.SimpleOnScaleGestureListener() {
                     @Override
@@ -94,6 +96,10 @@ public class PinchZoomLayout extends FrameLayout {
         mScaleDetector.setQuickScaleEnabled(false);
     }
 
+    private int dp(int value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
+    }
+
     /**
      * NEWTUBE(motion): claims a whole touch for the player's tap detector before any child can
      * hit-test it - the second tap of a double tap whose first tap just revealed the controls, which
@@ -108,9 +114,25 @@ public class PinchZoomLayout extends FrameLayout {
     @Nullable
     private TapRouter mTapRouter;
     private boolean mRoutingTap;
+    @Nullable private SwipeRouter mSwipeRouter;
+    private float mSwipeStartX;
+    private float mSwipeStartY;
+    private boolean mSwipeEligible;
+    private boolean mRoutingSwipe;
+    private final int mSwipeThreshold;
+
+    public interface SwipeRouter {
+        boolean isEnabled();
+
+        void onSwipe(float deltaX, float deltaY);
+    }
 
     public void setTapRouter(@Nullable TapRouter router) {
         mTapRouter = router;
+    }
+
+    public void setSwipeRouter(@Nullable SwipeRouter router) {
+        mSwipeRouter = router;
     }
 
     public void setPinchListener(@Nullable PinchListener listener) {
@@ -125,9 +147,30 @@ public class PinchZoomLayout extends FrameLayout {
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         if (ev.getActionMasked() == MotionEvent.ACTION_DOWN) {
             mRoutingTap = mTapRouter != null && mTapRouter.claimDown(ev);
+            mSwipeStartX = ev.getX();
+            mSwipeStartY = ev.getY();
+            mSwipeEligible = !mRoutingTap && mSwipeRouter != null && mSwipeRouter.isEnabled();
+            mRoutingSwipe = false;
             if (mRoutingTap) {
                 return true; // the rest of this touch comes to onTouchEvent
             }
+        }
+        if (mRoutingSwipe) {
+            return true;
+        }
+        if (mSwipeEligible && ev.getActionMasked() == MotionEvent.ACTION_MOVE && ev.getPointerCount() == 1) {
+            float dx = ev.getX() - mSwipeStartX;
+            float dy = ev.getY() - mSwipeStartY;
+            float dominant = Math.max(Math.abs(dx), Math.abs(dy));
+            float minor = Math.min(Math.abs(dx), Math.abs(dy));
+            if (dominant >= mSwipeThreshold && dominant > minor * 1.25f) {
+                mRoutingSwipe = true;
+                mRoutingTap = false;
+                return true;
+            }
+        }
+        if (ev.getActionMasked() == MotionEvent.ACTION_POINTER_DOWN) {
+            mSwipeEligible = false;
         }
         if (!mPinchEnabled || mListener == null) {
             return super.onInterceptTouchEvent(ev);
@@ -141,11 +184,23 @@ public class PinchZoomLayout extends FrameLayout {
 
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
+        if (mRoutingSwipe) {
+            int action = ev.getActionMasked();
+            if (action == MotionEvent.ACTION_UP && mSwipeRouter != null && mSwipeRouter.isEnabled()) {
+                mSwipeRouter.onSwipe(ev.getX() - mSwipeStartX, ev.getY() - mSwipeStartY);
+            }
+            if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
+                mRoutingSwipe = false;
+                mSwipeEligible = false;
+            }
+            return true;
+        }
         if (mRoutingTap && mTapRouter != null) {
             mTapRouter.route(ev);
             int action = ev.getActionMasked();
             if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
                 mRoutingTap = false;
+                mSwipeEligible = false;
             }
             return true;
         }

@@ -70,6 +70,7 @@ import com.newtube.mobile.ui.common.MobileActivity;
 import com.newtube.mobile.ui.common.MobileSnackbar;
 import com.newtube.mobile.ui.common.Motion;
 import com.newtube.mobile.ui.common.ShortsFilter;
+import com.newtube.mobile.player.ShortsPlaybackSession;
 import com.newtube.mobile.ui.common.SkeletonReveal;
 import com.newtube.mobile.ui.update.MobileUpdateActivity;
 import com.newtube.mobile.update.AppUpdates;
@@ -161,6 +162,7 @@ public class MobileBrowseActivity extends MobileActivity
     private View mTopTitle;
     private View mTopBack;
     private int mNavigationScrollDistance;
+    private boolean mShortsAutoPlayPending;
     // "You" tab panel (account header + grouped section rows + Settings row; replaces the drawer).
     private View mYouPanel;
     private LinearLayout mYouRows;
@@ -1295,6 +1297,7 @@ public class MobileBrowseActivity extends MobileActivity
         boolean switched = mCurrentSectionId != sectionId;
         mCurrentSectionId = sectionId;
         applySectionPresentation(sectionId);
+        mShortsAutoPlayPending = sectionId == MediaGroup.TYPE_SHORTS;
         rebuildCategoryBar();
         paintCachedSnapshot(sectionId, switched);
         syncNavHighlight(sectionId);
@@ -1302,6 +1305,7 @@ public class MobileBrowseActivity extends MobileActivity
         if (mPresenter != null) {
             mPresenter.onSectionFocused(sectionId);
         }
+        maybeStartShortsPlayback();
     }
 
     private void applySectionPresentation(int sectionId) {
@@ -1312,6 +1316,21 @@ public class MobileBrowseActivity extends MobileActivity
         int columns = shorts ? 2 : computeSpanCount();
         if (mLayoutManager.getSpanCount() != columns) {
             mLayoutManager.setSpanCount(columns);
+        }
+    }
+
+    private void maybeStartShortsPlayback() {
+        if (!mShortsAutoPlayPending || mCurrentSectionId != MediaGroup.TYPE_SHORTS
+                || mCurrentVideos.isEmpty() || mPresenter == null || isFinishing()) {
+            return;
+        }
+        for (Video video : mCurrentVideos) {
+            if (video != null && video.hasVideo()) {
+                mShortsAutoPlayPending = false;
+                ShortsPlaybackSession.start(mCurrentVideos, video);
+                onVideoClicked(video);
+                return;
+            }
         }
     }
 
@@ -1407,6 +1426,12 @@ public class MobileBrowseActivity extends MobileActivity
     private void onVideoClicked(Video video) {
         if (mPresenter == null) {
             return;
+        }
+
+        if (mCurrentSectionId == MediaGroup.TYPE_SHORTS && video != null && video.hasVideo()) {
+            ShortsPlaybackSession.start(mCurrentVideos, video);
+        } else {
+            ShortsPlaybackSession.clear();
         }
 
         // NEWTUBE(downloads): a card that is still downloading (or failed) has no file to play
@@ -2257,6 +2282,7 @@ public class MobileBrowseActivity extends MobileActivity
             boolean switched = mCurrentSectionId != section.getId();
             mCurrentSectionId = section.getId();
             applySectionPresentation(section.getId());
+            mShortsAutoPlayPending = section.getId() == MediaGroup.TYPE_SHORTS;
             paintCachedSnapshot(section.getId(), switched);
 
             // The section may not be one of the sections shown in the bottom nav - e.g. the
@@ -2268,6 +2294,7 @@ public class MobileBrowseActivity extends MobileActivity
             if (mPresenter != null) {
                 mPresenter.onSectionFocused(section.getId());
             }
+            maybeStartShortsPlayback();
 
             if (focusOnContent) {
                 focusOnContent();
@@ -2355,6 +2382,10 @@ public class MobileBrowseActivity extends MobileActivity
                     + " size=" + mCurrentVideos.size());
             submitFeed(staleSwap);
             checkFeedRunway();
+            if (mCurrentSectionId == MediaGroup.TYPE_SHORTS) {
+                ShortsPlaybackSession.append(mCurrentVideos);
+                maybeStartShortsPlayback();
+            }
 
             if (isDownloadsSectionShowing()) {
                 // Local cards carry their file and registry entry - not something a persisted
@@ -2889,6 +2920,7 @@ public class MobileBrowseActivity extends MobileActivity
             mLastSessionFallback = null;
             setSkeletonVisible(false);
             mContentSwipe.setRefreshing(false);
+            maybeStartShortsPlayback();
         });
     }
 }

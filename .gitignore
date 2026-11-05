@@ -80,3 +80,4 @@ keystore.properties
 
 # Python bytecode from tools/*.py
 __pycache__/
+.kotlin/

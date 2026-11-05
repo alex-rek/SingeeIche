@@ -966,6 +966,7 @@ public class Media3PlayerController implements Player.Listener {
         mTrackSelector = trackSelector;
         mTrackAdapter = new Media3TrackAdapter(trackSelector);
         mTrackAdapter.setPreferOriginalAudio(true); // NEWTUBE(mobile): match the legacy default
+        mTrackAdapter.setPreferredAudioLanguage(VideoLanguagePreference.getEffective(mContext));
         applyPersistedFormats();
     }
 
@@ -1085,6 +1086,9 @@ public class Media3PlayerController implements Player.Listener {
     }
 
     public void setVideo(Video video) {
+        if (mTrackAdapter != null) {
+            mTrackAdapter.setPreferredAudioLanguage(VideoLanguagePreference.getEffective(mContext));
+        }
         mVideo = new WeakReference<>(video);
     }
 

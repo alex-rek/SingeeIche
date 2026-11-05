@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mobile_settings_restart_needed">Перезапустите SingeeIche, чтобы применить изменение</string>
+    <string name="mobile_settings_restart">Перезапустить</string>
+    <string name="mobile_settings_off">Выкл.</string>
+    <string name="mobile_settings_more">Ещё</string>
+    <string name="mobile_settings_default_value">%1$s (по умолчанию)</string>
+    <string name="mobile_settings_clear">Очистить</string>
+    <string name="mobile_settings_cleared">Очищено</string>
+    <string name="mobile_settings_unavailable">Недоступно на этом устройстве</string>
+    <plurals name="mobile_settings_minutes"><item quantity="one">%d минута</item><item quantity="few">%d минуты</item><item quantity="many">%d минут</item><item quantity="other">%d минуты</item></plurals>
+    <plurals name="mobile_settings_hours"><item quantity="one">%d час</item><item quantity="few">%d часа</item><item quantity="many">%d часов</item><item quantity="other">%d часа</item></plurals>
+    <string name="mobile_settings_hours_minutes">%1$d ч %2$d мин</string>
+    <string name="mobile_settings_account">Аккаунт</string>
+    <string name="mobile_settings_account_signed_out">Вы не вошли · Войдите, чтобы увидеть подписки</string>
+    <string name="mobile_settings_account_switch">Сменить аккаунт или управлять аккаунтами</string>
+    <string name="mobile_settings_group_app">Приложение</string>
+    <string name="mobile_settings_group_video">Видео и звук</string>
+    <string name="mobile_settings_group_other">Другое</string>
+    <string name="mobile_settings_general">Общие</string>
+    <string name="mobile_settings_general_summary">Тема, язык, начальный экран</string>
+    <string name="mobile_settings_general_summary_value">Тема: %1$s, язык, начальный экран</string>
+    <string name="mobile_settings_theme_system_short">Системная</string>
+    <string name="mobile_settings_theme_light_short">Светлая</string>
+    <string name="mobile_settings_theme_dark_short">Тёмная</string>
+    <string name="mobile_settings_feeds">Вкладки и ленты</string>
+    <string name="mobile_settings_feeds_summary">Вкладки, скрытые видео, меню видео</string>
+    <string name="mobile_settings_privacy">История и конфиденциальность</string>
+    <string name="mobile_settings_privacy_summary">История просмотров и поиска</string>
+    <string name="mobile_settings_playback">Воспроизведение</string>
+    <string name="mobile_settings_playback_summary">Автовоспроизведение, фон, скорость</string>
+    <string name="mobile_settings_quality">Качество видео</string>
+    <string name="mobile_settings_quality_intro">Качество, с которого начинается воспроизведение. Для отдельного видео его можно изменить в настройках плеера.</string>
+    <string name="mobile_settings_quality_auto">Авто (до %1$dп)</string>
+    <string name="mobile_settings_quality_auto_desc">Рекомендуется. Максимальное качество для вашего подключения</string>
+    <string name="mobile_settings_quality_up_to">До %1$s</string>
+    <string name="mobile_settings_audio">Звук</string>
+    <string name="mobile_settings_loudness">Выравнивать громкость</string>
+    <string name="mobile_settings_loudness_summary">Снижает громкость слишком громких видео до обычного уровня YouTube</string>
+    <string name="mobile_settings_player_volume">Громкость плеера</string>
+    <string name="mobile_settings_quality_data_saver_note">При включённой экономии трафика Android SingeeIche использует меньше буфера в мобильной сети.</string>
+    <string name="mobile_settings_captions">Субтитры</string>
+    <string name="mobile_settings_captions_summary">Стиль, размер и положение</string>
+    <string name="mobile_settings_sponsorblock_on">Вкл. · пропускает рекламу и заставки</string>
+    <string name="mobile_settings_dearrow_both">Улучшенные названия и миниатюры</string>
+    <string name="mobile_settings_dearrow_titles_only">Улучшенные названия</string>
+    <string name="mobile_settings_dearrow_thumbnails_only">Улучшенные миниатюры</string>
+    <string name="mobile_settings_backup">Резервное копирование</string>
+    <string name="mobile_settings_backup_summary">Сохранить настройки в файл</string>
+    <string name="mobile_settings_advanced">Дополнительно</string>
+    <string name="mobile_settings_advanced_summary">Трансляция, сеть и исправления</string>
+    <string name="mobile_settings_about">О приложении</string>
+    <string name="mobile_settings_language">Язык интерфейса</string>
+    <string name="mobile_settings_video_language">Язык видео</string>
+    <string name="mobile_settings_video_language_default">Автоматически (%1$s)</string>
+    <string name="mobile_settings_country">Страна</string>
+    <string name="mobile_settings_start_screen">Начальный экран</string>
+    <string name="mobile_settings_interface_size">Размер интерфейса</string>
+    <string name="mobile_settings_voice_search">Сразу начинать голосовой поиск</string>
+    <string name="mobile_settings_voice_search_summary">При открытии поиска сразу включается прослушивание</string>
+    <string name="mobile_settings_24_hour">24-часовой формат времени</string>
+    <string name="mobile_settings_24_hour_summary">Время начала премьер и прямых трансляций</string>
+</resources>

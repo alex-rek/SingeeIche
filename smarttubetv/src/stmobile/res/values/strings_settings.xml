@@ -55,6 +55,8 @@
 
     <!-- General -->
     <string name="mobile_settings_language">Language</string>
+    <string name="mobile_settings_video_language">Video language</string>
+    <string name="mobile_settings_video_language_default">Automatic (%1$s)</string>
     <string name="mobile_settings_country">Location</string>
     <string name="mobile_settings_start_screen">Start screen</string>
     <string name="mobile_settings_interface_size">Interface size</string>

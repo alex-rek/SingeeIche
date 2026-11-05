@@ -18,6 +18,7 @@
     <string name="mobile_settings_search_kw_channels_order">subscriptions sort channels</string>
     <string name="mobile_settings_search_kw_watch_history">pause history incognito</string>
     <string name="mobile_settings_search_kw_video_ends">autoplay repeat loop shuffle next video</string>
+    <string name="mobile_settings_search_kw_video_language">video audio language dubbing voice track</string>
     <string name="mobile_settings_search_kw_background">background play picture in picture pip audio only minimize</string>
     <string name="mobile_settings_search_kw_natural_voice">pitch time stretching chipmunk</string>
     <string name="mobile_settings_search_kw_audio_focus">calls notifications other apps interruptions</string>

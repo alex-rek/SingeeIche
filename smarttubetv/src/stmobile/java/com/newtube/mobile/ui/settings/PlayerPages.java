@@ -30,6 +30,7 @@ import com.liskovsoft.smartyoutubetv2.common.utils.Utils;
 import com.liskovsoft.smartyoutubetv2.tv.R;
 import com.liskovsoft.youtubeapi.service.internal.MediaServiceData;
 import com.newtube.mobile.player.SabrSourcePreference;
+import com.newtube.mobile.player.VideoLanguagePreference;
 import com.newtube.mobile.ui.playback.PlayerGesturePrefs;
 import com.newtube.mobile.ui.common.MobileSnackbar;
 
@@ -60,6 +61,17 @@ final class PlayerPages {
         PlayerData playerData = PlayerData.instance(context);
         PlayerTweaksData tweaks = PlayerTweaksData.instance(context);
         GeneralData generalData = GeneralData.instance(context);
+
+        SettingsRow.Choice<String> videoLanguage = SettingsRow.choice(
+                context.getString(R.string.mobile_settings_video_language));
+        Locale interfaceLocale = context.getResources().getConfiguration().getLocales().get(0);
+        videoLanguage.option(context.getString(R.string.mobile_settings_video_language_default,
+                interfaceLocale.getDisplayLanguage(interfaceLocale)), "");
+        for (Locale locale : VideoLanguagePreference.supportedLanguages(context)) {
+            videoLanguage.option(locale.getDisplayLanguage(interfaceLocale), locale.getLanguage());
+        }
+        rows.add(videoLanguage.bind(() -> VideoLanguagePreference.get(context),
+                language -> VideoLanguagePreference.set(context, language)));
 
         rows.add(SettingsRow.<Integer>choice(context.getString(R.string.mobile_settings_video_ends))
                 .option(context.getString(R.string.mobile_settings_video_ends_next), PlayerConstants.PLAYBACK_MODE_ALL)

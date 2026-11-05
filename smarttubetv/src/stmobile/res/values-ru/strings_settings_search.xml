@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mobile_settings_search_hint">Поиск по настройкам</string>
+    <string name="mobile_settings_search_none">По запросу «%1$s» настройки не найдены</string>
+    <string name="mobile_settings_search_kw_account">войти выход аккаунт гугл профиль сменить</string>
+    <string name="mobile_settings_search_kw_theme">тёмная светлая тема ночь внешний вид цвет</string>
+    <string name="mobile_settings_search_kw_pure_black">амолед oled чёрная темная батарея</string>
+    <string name="mobile_settings_search_kw_country">страна регион местоположение</string>
+    <string name="mobile_settings_search_kw_start_screen">запуск стартовая вкладка домашняя главная</string>
+    <string name="mobile_settings_search_kw_interface_size">масштаб размер шрифт текст крупнее меньше</string>
+    <string name="mobile_settings_search_kw_tabs">нижняя панель вкладки разделы навигация</string>
+    <string name="mobile_settings_search_kw_hidden">скрыть просмотренные фильтр премьеры эфир</string>
+    <string name="mobile_settings_search_kw_video_menu">контекстное меню три точки удержание параметры</string>
+    <string name="mobile_settings_search_kw_channels_order">подписки сортировка каналы</string>
+    <string name="mobile_settings_search_kw_watch_history">пауза история инкогнито</string>
+    <string name="mobile_settings_search_kw_video_ends">автовоспроизведение повтор цикл случайно следующее видео</string>
+    <string name="mobile_settings_search_kw_video_language">язык видео аудио озвучка дубляж дорожка голос</string>
+    <string name="mobile_settings_search_kw_background">фон картинка картинке pip только звук свернуть</string>
+    <string name="mobile_settings_search_kw_natural_voice">тон голос скорость ускорение</string>
+    <string name="mobile_settings_search_kw_audio_focus">звонки уведомления другие приложения прерывания</string>
+    <string name="mobile_settings_search_kw_hide_related">рекомендации похожие далее</string>
+    <string name="mobile_settings_search_kw_dislikes">дизлайки количество return youtube dislike</string>
+    <string name="mobile_settings_search_kw_quality">разрешение 4k 1080p 720p hd экономия трафика</string>
+    <string name="mobile_settings_search_kw_loudness">нормализация громкости тихий громкий звук</string>
+    <string name="mobile_settings_search_kw_player_volume">громкость плеера звук</string>
+    <string name="mobile_settings_search_kw_captions">субтитры cc подписи</string>
+    <string name="mobile_settings_search_kw_sponsorblock">пропуск спонсоры реклама сегменты заставки</string>
+    <string name="mobile_settings_search_kw_dearrow">кликбейт заголовки миниатюры</string>
+    <string name="mobile_settings_search_kw_backup">экспорт импорт сохранить восстановить настройки</string>
+    <string name="mobile_settings_search_kw_video_format">кодек vp9 av1 h264 avc hdr 60fps</string>
+    <string name="mobile_settings_search_kw_buffer">буферизация кэш память загрузка</string>
+    <string name="mobile_settings_search_kw_dns">dns ipv4 ipv6 серверы</string>
+    <string name="mobile_settings_search_kw_conscrypt">ssl tls сертификаты безопасность блокировка</string>
+    <string name="mobile_settings_search_kw_multi_profiles">профили аккаунт отдельные разные</string>
+    <string name="mobile_settings_search_kw_updates">обновление версия новая</string>
+    <string name="mobile_settings_search_kw_diagnostic_log">ошибка журнал лог диагностика отладка</string>
+    <string name="mobile_settings_search_kw_gesture_levels">жесты яркость громкость</string>
+    <string name="mobile_settings_search_kw_gesture_seek">жесты перемотка вперёд назад</string>
+</resources>

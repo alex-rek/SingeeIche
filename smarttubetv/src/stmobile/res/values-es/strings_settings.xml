@@ -53,6 +53,8 @@
 
     <!-- General -->
     <string name="mobile_settings_language">Idioma</string>
+    <string name="mobile_settings_video_language">Idioma del vídeo</string>
+    <string name="mobile_settings_video_language_default">Automático (%1$s)</string>
     <string name="mobile_settings_country">Ubicación</string>
     <string name="mobile_settings_start_screen">Pantalla de inicio</string>
     <string name="mobile_settings_interface_size">Tamaño de la interfaz</string>
