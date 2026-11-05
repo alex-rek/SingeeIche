@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="about_app">О приложении %1$s</string>
+    <string name="about_source_code">Исходный код SingeeIche</string>
+    <string name="about_license">Лицензия</string>
+    <string name="diagnostic_log_send">Отправить журнал диагностики</string>
+    <string name="diagnostic_log_send_desc">Для сообщения об ошибках. В журнал входят просмотренные видео и каналы; пароли и токены входа удаляются</string>
+    <string name="dialog_download">Скачать</string>
     <string name="title_search">Поиск</string>
     <string name="header_home">Главная</string>
     <string name="header_subscriptions">Подписки</string>

@@ -16,9 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The two rows at the end of Settings > About that help others find the app: "Star NewTube on
- * GitHub" (opens the repository) and "Share NewTube" (the system share sheet with one line and
- * the site link). They only act when tapped: no prompt, badge or counter anywhere else.
+ * The Share row at the end of Settings > About (the system share sheet with the repository link).
  */
 public final class AboutShareRows {
     private static final String TAG = AboutShareRows.class.getSimpleName();
@@ -28,11 +26,6 @@ public final class AboutShareRows {
 
     public static List<OptionItem> create(Context context) {
         List<OptionItem> rows = new ArrayList<>();
-
-        rows.add(UiOptionItem.from(
-                context.getString(R.string.mobile_about_star),
-                context.getString(R.string.mobile_about_star_desc),
-                option -> Utils.openLinkExt(context, context.getString(R.string.mobile_about_repo_url))));
 
         rows.add(UiOptionItem.from(
                 context.getString(R.string.mobile_about_share),

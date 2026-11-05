@@ -158,6 +158,9 @@ public class MobileBrowseActivity extends MobileActivity
     private android.widget.HorizontalScrollView mCategoryScroll;
     private LinearLayout mCategoryItems;
     private boolean mBarsHidden;
+    private View mTopTitle;
+    private View mTopBack;
+    private int mNavigationScrollDistance;
     // "You" tab panel (account header + grouped section rows + Settings row; replaces the drawer).
     private View mYouPanel;
     private LinearLayout mYouRows;
@@ -305,6 +308,8 @@ public class MobileBrowseActivity extends MobileActivity
         mBottomNav = findViewById(R.id.mobile_bottom_nav);
         mCategoryScroll = findViewById(R.id.mobile_category_scroll);
         mCategoryItems = findViewById(R.id.mobile_category_items);
+        mTopTitle = findViewById(R.id.mobile_title_bar);
+        mTopBack = findViewById(R.id.mobile_title_back);
         mYouPanel = findViewById(R.id.mobile_you_panel);
         mYouRows = findViewById(R.id.mobile_you_rows);
         mYouAccountText = findViewById(R.id.mobile_you_account_text);
@@ -818,7 +823,15 @@ public class MobileBrowseActivity extends MobileActivity
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 if (dy != 0 && !mYouShowing) {
-                    setNavigationBarsHidden(dy < 0);
+                    mNavigationScrollDistance += dy;
+                    int threshold = dp(12);
+                    if (mNavigationScrollDistance >= threshold) {
+                        setNavigationBarsHidden(true);
+                        mNavigationScrollDistance = 0;
+                    } else if (mNavigationScrollDistance <= -threshold) {
+                        setNavigationBarsHidden(false);
+                        mNavigationScrollDistance = 0;
+                    }
                 }
                 if (dy < 0) {
                     // NEWTUBE(shelf-tail): scrolling back up re-arms the near-end report, so a
@@ -1058,10 +1071,9 @@ public class MobileBrowseActivity extends MobileActivity
     /**
      * Rebuild the panel's section list, grouped like the official You page: the user's own
      * content first (Playlists, My videos, Channels, ...), then the discovery feeds under an
-     * "Explore" label, then Settings behind a divider. Sections shown in the bottom nav (and
-     * Settings/Shorts) are excluded - Settings gets its own trailing row, and NewTube has no
-     * Shorts (see ShortsFilter). Long-press on a section row opens the section-management menu
-     * (the old drawer rows' "..." overflow).
+     * "Explore" label, then Settings behind a divider. Sections shown in the bottom nav and
+     * Settings are excluded - Settings gets its own trailing row. Long-press on a section row
+     * opens the section-management menu (the old drawer rows' "..." overflow).
      */
     private void rebuildYouRows() {
         mYouRows.removeAllViews();
@@ -1282,12 +1294,24 @@ public class MobileBrowseActivity extends MobileActivity
 
         boolean switched = mCurrentSectionId != sectionId;
         mCurrentSectionId = sectionId;
+        applySectionPresentation(sectionId);
         rebuildCategoryBar();
         paintCachedSnapshot(sectionId, switched);
         syncNavHighlight(sectionId);
 
         if (mPresenter != null) {
             mPresenter.onSectionFocused(sectionId);
+        }
+    }
+
+    private void applySectionPresentation(int sectionId) {
+        mNavigationScrollDistance = 0;
+        setNavigationBarsHidden(false);
+        boolean shorts = sectionId == MediaGroup.TYPE_SHORTS;
+        mAdapter.setShortsMode(shorts);
+        int columns = shorts ? 2 : computeSpanCount();
+        if (mLayoutManager.getSpanCount() != columns) {
+            mLayoutManager.setSpanCount(columns);
         }
     }
 
@@ -1319,7 +1343,7 @@ public class MobileBrowseActivity extends MobileActivity
         mCurrentVideos.clear();
         mAwaitingFreshContent = cached != null;
         if (cached != null) {
-            mCurrentVideos.addAll(visibleFeedItems(cached));
+            mCurrentVideos.addAll(visibleFeedItems(cached, sectionId));
         }
 
         mLastPaginationTriggerCount = -1;
@@ -1645,13 +1669,24 @@ public class MobileBrowseActivity extends MobileActivity
     private void setNavigationBarsHidden(boolean hidden) {
         if (mBarsHidden == hidden) return;
         mBarsHidden = hidden;
-        animateBar(mCategoryScroll, hidden, -mCategoryScroll.getHeight());
-        animateBar(mBottomNav, hidden, mBottomNav.getHeight());
+        float titleHeight = getResources().getDimensionPixelSize(R.dimen.mobile_title_bar_height);
+        animateBar(mTopTitle, hidden, -titleHeight, true);
+        animateBar(mTopBack, hidden, -titleHeight, mSectionFromYou && !mYouShowing);
+        animateBar(mSearchButton, hidden, -titleHeight, true);
+        animateBar(mCastButton, hidden, -titleHeight, true);
+        animateBar(mCategoryScroll, hidden, -dp(48), true);
+        animateBar(mBottomNav, hidden, mBottomNav.getHeight(), true);
     }
 
-    private void animateBar(View view, boolean hidden, float distance) {
+    private void animateBar(View view, boolean hidden, float distance, boolean visibleWhenShown) {
+        if (view == null || view.getVisibility() == View.GONE && hidden) return;
         view.animate().cancel();
-        if (!hidden) view.setVisibility(View.VISIBLE);
+        if (!hidden && visibleWhenShown) view.setVisibility(View.VISIBLE);
+        if (!hidden && !visibleWhenShown) {
+            view.animate().cancel();
+            view.setVisibility(View.GONE);
+            return;
+        }
         view.animate().translationY(hidden ? distance : 0).alpha(hidden ? 0f : 1f)
                 .setDuration(220).withEndAction(() -> {
                     if (hidden && mBarsHidden) view.setVisibility(View.GONE);
@@ -2125,6 +2160,9 @@ public class MobileBrowseActivity extends MobileActivity
     }
 
     private void updateGridSpanCount(int spanCount) {
+        if (mCurrentSectionId == MediaGroup.TYPE_SHORTS) {
+            spanCount = 2;
+        }
         if (mLayoutManager != null && mLayoutManager.getSpanCount() != spanCount) {
             mLayoutManager.setSpanCount(spanCount);
         }
@@ -2218,6 +2256,7 @@ public class MobileBrowseActivity extends MobileActivity
             hideYouPanel();
             boolean switched = mCurrentSectionId != section.getId();
             mCurrentSectionId = section.getId();
+            applySectionPresentation(section.getId());
             paintCachedSnapshot(section.getId(), switched);
 
             // The section may not be one of the sections shown in the bottom nav - e.g. the
@@ -2279,7 +2318,7 @@ public class MobileBrowseActivity extends MobileActivity
                     staleSwap = mAwaitingFreshContent;
                     mCurrentVideos.clear();
                     if (!emptyReplace) {
-                        mCurrentVideos.addAll(visibleFeedItems(group.getVideos()));
+                        mCurrentVideos.addAll(visibleFeedItems(group.getVideos(), mCurrentSectionId));
                     }
                     mAwaitingFreshContent = false;
                     if (emptyReplace) {
@@ -2287,7 +2326,7 @@ public class MobileBrowseActivity extends MobileActivity
                     }
                     break;
                 case VideoGroup.ACTION_PREPEND:
-                    mCurrentVideos.addAll(0, visibleFeedItems(group.getVideos()));
+                    mCurrentVideos.addAll(0, visibleFeedItems(group.getVideos(), mCurrentSectionId));
                     break;
                 case VideoGroup.ACTION_REMOVE:
                     mCurrentVideos.removeAll(group.getVideos());
@@ -2541,35 +2580,33 @@ public class MobileBrowseActivity extends MobileActivity
         // and same isMix()", so equal videos always share a bucket.
         java.util.Set<Video> present = new java.util.HashSet<>(mCurrentVideos);
         for (Video video : videos) {
-            if (isVisibleFeedItem(video) && present.add(video)) {
+            if (isVisibleFeedItem(video, mCurrentSectionId) && present.add(video)) {
                 mCurrentVideos.add(video);
             }
         }
     }
 
     /**
-     * Browse sections are video feeds, not discovery results. YouTube occasionally injects a
-     * channel-shaped recommendation into Home/Trending; rendering that with the shared search
-     * adapter creates an avatar-only row in the middle of otherwise full-thumbnail cards. NewTube
-     * has no Shorts, so none are shown in any section ({@link ShortsFilter}). Keep true playlists
-     * (which use a similar service shape), and leave channel discovery to Search.
+     * Browse feeds exclude Shorts outside their dedicated section. That section uses the same
+     * Shorts query and grid type as SmartTube's BrowsePresenter, while keeping the other mobile
+     * feeds free of Shorts mixed into standard video cards.
      */
-    private static List<Video> visibleFeedItems(List<Video> videos) {
+    private static List<Video> visibleFeedItems(List<Video> videos, int sectionId) {
         List<Video> visible = new ArrayList<>();
         if (videos == null) {
             return visible;
         }
         for (Video video : videos) {
-            if (isVisibleFeedItem(video)) {
+            if (isVisibleFeedItem(video, sectionId)) {
                 visible.add(video);
             }
         }
         return visible;
     }
 
-    private static boolean isVisibleFeedItem(Video video) {
+    private static boolean isVisibleFeedItem(Video video, int sectionId) {
         return video != null
-                && !ShortsFilter.isShort(video)
+                && (sectionId == MediaGroup.TYPE_SHORTS || !ShortsFilter.isShort(video))
                 && (!video.isChannel() || video.isPlaylistAsChannel())
                 && !isSearchQueryTile(video);
     }
@@ -2699,7 +2736,7 @@ public class MobileBrowseActivity extends MobileActivity
             // NEWTUBE(motion): the first load after a cold start failed - last session's cards
             // beat an error page (the pre-skeleton behaviour); pull-to-refresh is the retry.
             if (!hasSignInAction && mCurrentVideos.isEmpty() && mLastSessionFallback != null) {
-                mCurrentVideos.addAll(visibleFeedItems(mLastSessionFallback));
+                mCurrentVideos.addAll(visibleFeedItems(mLastSessionFallback, mCurrentSectionId));
                 mLastSessionFallback = null;
                 mAwaitingFreshContent = true;
                 mAdapter.submitList(new ArrayList<>(mCurrentVideos));
@@ -2846,7 +2883,7 @@ public class MobileBrowseActivity extends MobileActivity
             mAwaitingFreshContent = false;
             if (mCurrentVideos.isEmpty() && mLastSessionFallback != null) {
                 // No fetch is coming for a section held back behind the skeleton: its cards it is.
-                mCurrentVideos.addAll(visibleFeedItems(mLastSessionFallback));
+                mCurrentVideos.addAll(visibleFeedItems(mLastSessionFallback, mCurrentSectionId));
                 mAdapter.submitList(new ArrayList<>(mCurrentVideos));
             }
             mLastSessionFallback = null;

@@ -56,6 +56,7 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
     private final OnVideoLongClickListener mLongClickListener;
     /** NEWTUBE(feed-avatars): set = cards show their channel's avatar, and tapping it calls this. */
     private OnVideoClickListener mChannelClickListener;
+    private boolean mShortsMode;
     /** Held here; ChannelAvatars holds it weakly, so it goes away with this adapter. */
     private final ChannelAvatars.Listener mAvatarListener = this::onAvatarsChanged;
 
@@ -111,6 +112,11 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
         }
     }
 
+    /** Portrait thumbnail cards for the dedicated Shorts grid. */
+    public void setShortsMode(boolean enabled) {
+        mShortsMode = enabled;
+    }
+
     private void onAvatarsChanged(java.util.Set<String> ids) {
         if (mChannelClickListener == null) {
             return;
@@ -149,7 +155,7 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
         if (holder instanceof ChannelViewHolder) {
             ((ChannelViewHolder) holder).bind(getItem(position), mLongClickListener);
         } else {
-            ((VideoViewHolder) holder).bind(getItem(position), mLongClickListener);
+            ((VideoViewHolder) holder).bind(getItem(position), mLongClickListener, mShortsMode);
             ((VideoViewHolder) holder).bindChannelAvatar(mChannelClickListener);
         }
     }
@@ -239,6 +245,9 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
             mMeta = itemView.findViewById(R.id.video_meta);
             mOverflow = itemView.findViewById(R.id.video_overflow);
             mAvatar = itemView.findViewById(R.id.video_channel_avatar);
+            // Android's default long-press motor tick was repeatedly firing on devices where the
+            // pointer micro-moved over the card. The menu still opens on the same long press.
+            itemView.setHapticFeedbackEnabled(false);
 
             itemView.setOnClickListener(v -> {
                 if (mVideo != null && clickListener != null) {
@@ -252,12 +261,24 @@ public class VideoCardAdapter extends ListAdapter<Video, RecyclerView.ViewHolder
             });
         }
 
-        public void bind(Video video, OnVideoLongClickListener longClickListener) {
+        public void bind(Video video, OnVideoLongClickListener longClickListener, boolean shortsMode) {
             mVideo = video;
             Context context = itemView.getContext();
+            ViewGroup.LayoutParams frameParams = mThumbnailFrame.getLayoutParams();
+            if (frameParams instanceof androidx.constraintlayout.widget.ConstraintLayout.LayoutParams) {
+                androidx.constraintlayout.widget.ConstraintLayout.LayoutParams ratioParams =
+                        (androidx.constraintlayout.widget.ConstraintLayout.LayoutParams) frameParams;
+                ratioParams.dimensionRatio = shortsMode ? "9:16" : "16:9";
+                mThumbnailFrame.setLayoutParams(ratioParams);
+            }
 
-            itemView.setOnLongClickListener(v ->
-                    mVideo != null && longClickListener != null && longClickListener.onVideoLongClick(mVideo));
+            itemView.setOnLongClickListener(v -> {
+                if (mVideo == null || longClickListener == null || !longClickListener.onVideoLongClick(mVideo)) {
+                    return false;
+                }
+                v.setPressed(false);
+                return true;
+            });
 
             // ⋮ = the exact long-press context menu, just discoverable (Not interested, Open
             // channel, playlists...). Hidden when the host screen has no menu wired.

@@ -1,6 +1,21 @@
 {
   "package": {
-    "downloadUrl": "https://github.com/alex-rek/SingeeIche/releases/download/v0.1.2/SingeeIche_0.1.2_universal.apk"
+    "downloadUrl": "https://github.com/alex-rek/SingeeIche/releases/download/v0.1.3/SingeeIche_0.1.3_universal.apk"
+  },
+  "0.1.3": {
+    "versionCode": 4,
+    "changelog": [
+      "Fixed scroll direction and navigation bar hiding.",
+      "Restored the Shorts feed and portrait cards.",
+      "Improved long-press behavior and localized settings.",
+      "Updated About links to SingeeIche and SmartTube."
+    ],
+    "changelog_ru": [
+      "Исправлено направление прокрутки и скрытие панелей навигации.",
+      "Восстановлена лента Shorts с вертикальными карточками.",
+      "Улучшено долгое нажатие и переведены настройки.",
+      "Обновлены ссылки в разделе «О приложении» на SingeeIche и SmartTube."
+    ]
   },
   "0.1.2": {
     "versionCode": 3,
