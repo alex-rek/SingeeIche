@@ -5,6 +5,7 @@
     <string name="header_subscriptions">Подписки</string>
     <string name="header_history">История</string>
     <string name="header_music">Музыка</string>
+    <string name="header_live">В эфире (Live)</string>
     <string name="header_news">Новости</string>
     <string name="header_gaming">Видеоигры</string>
     <string name="header_playlists">Плейлисты</string>

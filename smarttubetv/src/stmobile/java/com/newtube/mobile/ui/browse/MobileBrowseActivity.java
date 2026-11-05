@@ -1783,7 +1783,9 @@ public class MobileBrowseActivity extends MobileActivity
         for (int i = 0; i < navSections.size(); i++) {
             BrowseSection section = navSections.get(i);
 
-            android.view.MenuItem item = menu.add(Menu.NONE, toMenuItemId(section.getId()), i, section.getTitle());
+            CharSequence title = section.getId() == VideoDownloads.SECTION_ID
+                    ? getString(R.string.mobile_nav_download) : section.getTitle();
+            android.view.MenuItem item = menu.add(Menu.NONE, toMenuItemId(section.getId()), i, title);
 
             int icon = navIconOrResFor(section);
             if (icon > 0) {

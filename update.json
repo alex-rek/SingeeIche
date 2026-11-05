@@ -1,6 +1,17 @@
 {
   "package": {
-    "downloadUrl": "https://github.com/alex-rek/SingeeIche/releases/download/v0.1.1/SingeeIche_0.1.1_universal.apk"
+    "downloadUrl": "https://github.com/alex-rek/SingeeIche/releases/download/v0.1.2/SingeeIche_0.1.2_universal.apk"
+  },
+  "0.1.2": {
+    "versionCode": 3,
+    "changelog": [
+      "Refined the requested bottom navigation labels.",
+      "Localized the Live category for Russian."
+    ],
+    "changelog_ru": [
+      "Уточнены подписи нижней навигации.",
+      "Добавлен русский перевод категории Live."
+    ]
   },
   "0.1.1": {
     "versionCode": 2,
