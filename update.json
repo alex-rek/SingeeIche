@@ -1,0 +1,20 @@
+{
+  "package": {
+    "downloadUrl": "https://github.com/alex-rek/SingeeIche/releases/download/v0.1.1/SingeeIche_0.1.1_universal.apk"
+  },
+  "0.1.1": {
+    "versionCode": 2,
+    "changelog": [
+      "Horizontal category navigation and updated bottom navigation.",
+      "Navigation bars smoothly hide while scrolling.",
+      "PeerTube support removed.",
+      "GitHub release updates enabled."
+    ],
+    "changelog_ru": [
+      "Добавлена горизонтальная полоса категорий и обновлена нижняя навигация.",
+      "Панели плавно скрываются при прокрутке.",
+      "Поддержка PeerTube удалена.",
+      "Добавлено обновление через релизы GitHub."
+    ]
+  }
+}

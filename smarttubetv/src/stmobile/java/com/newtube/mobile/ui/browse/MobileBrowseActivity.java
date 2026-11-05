@@ -58,7 +58,6 @@ import com.newtube.mobile.downloads.DownloadItem;
 import com.newtube.mobile.downloads.DownloadMenu;
 import com.newtube.mobile.downloads.DownloadRegistry;
 import com.newtube.mobile.downloads.DownloadsBridge;
-import com.newtube.mobile.peertube.PeerTubeActivity;
 import com.newtube.mobile.SessionWarmup;
 import com.newtube.mobile.casting.CastPickerLauncher;
 import com.newtube.mobile.casting.CastSessionManager;
@@ -131,17 +130,17 @@ public class MobileBrowseActivity extends MobileActivity
      * title-string fallback in case a section ever arrives with a non-standard id.
      */
     private static final int[] PREFERRED_SECTION_IDS = {
-            MediaGroup.TYPE_HOME,
-            MediaGroup.TYPE_SUBSCRIPTIONS,
-            MediaGroup.TYPE_HISTORY,
-            VideoDownloads.SECTION_ID,
+            MediaGroup.TYPE_HOME, MediaGroup.TYPE_SHORTS, VideoDownloads.SECTION_ID,
     };
     private static final int[] PREFERRED_SECTION_TITLE_RES = {
-            R.string.header_home,
-            R.string.header_subscriptions,
-            R.string.header_history,
-            R.string.header_downloads,
+            R.string.header_home, R.string.header_shorts, R.string.header_downloads,
     };
+    private static final int[] CATEGORY_IDS = {MediaGroup.TYPE_HOME, MediaGroup.TYPE_SUBSCRIPTIONS,
+            MediaGroup.TYPE_MUSIC, MediaGroup.TYPE_LIVE, MediaGroup.TYPE_KIDS_HOME,
+            MediaGroup.TYPE_SPORTS, MediaGroup.TYPE_GAMING};
+    private static final int[] CATEGORY_TITLES = {R.string.header_home, R.string.header_subscriptions,
+            R.string.header_music, R.string.header_live, R.string.header_kids_home,
+            R.string.header_sports, R.string.header_gaming};
 
     private BrowsePresenter mPresenter;
 
@@ -156,6 +155,9 @@ public class MobileBrowseActivity extends MobileActivity
     private GridLayoutManager mLayoutManager;
     private VideoCardAdapter mAdapter;
     private BottomNavigationView mBottomNav;
+    private android.widget.HorizontalScrollView mCategoryScroll;
+    private LinearLayout mCategoryItems;
+    private boolean mBarsHidden;
     // "You" tab panel (account header + grouped section rows + Settings row; replaces the drawer).
     private View mYouPanel;
     private LinearLayout mYouRows;
@@ -301,6 +303,8 @@ public class MobileBrowseActivity extends MobileActivity
         mFeedSkeleton = findViewById(R.id.mobile_feed_skeleton);
         setupSwipeRefresh();
         mBottomNav = findViewById(R.id.mobile_bottom_nav);
+        mCategoryScroll = findViewById(R.id.mobile_category_scroll);
+        mCategoryItems = findViewById(R.id.mobile_category_items);
         mYouPanel = findViewById(R.id.mobile_you_panel);
         mYouRows = findViewById(R.id.mobile_you_rows);
         mYouAccountText = findViewById(R.id.mobile_you_account_text);
@@ -813,6 +817,9 @@ public class MobileBrowseActivity extends MobileActivity
         mContentGrid.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                if (dy != 0 && !mYouShowing) {
+                    setNavigationBarsHidden(dy < 0);
+                }
                 if (dy < 0) {
                     // NEWTUBE(shelf-tail): scrolling back up re-arms the near-end report, so a
                     // reader at a stalled end (a failed or refused page, nothing new to scroll to)
@@ -1072,6 +1079,7 @@ public class MobileBrowseActivity extends MobileActivity
         for (BrowseSection section : mSections) {
             if (!section.isEnabled()
                     || navSections.contains(section)
+                    || isCategorySection(section.getId())
                     || section.getId() == MediaGroup.TYPE_SETTINGS
                     || section.getId() == MediaGroup.TYPE_SHORTS) {
                 continue;
@@ -1104,8 +1112,6 @@ public class MobileBrowseActivity extends MobileActivity
         }
 
         addYouDivider();
-        addYouRow(0, getString(R.string.mobile_peertube_entry),
-                () -> startActivity(new Intent(this, PeerTubeActivity.class)));
         addYouRow(R.drawable.ic_mobile_settings, getString(R.string.header_settings),
                 this::openSettings);
     }
@@ -1276,6 +1282,7 @@ public class MobileBrowseActivity extends MobileActivity
 
         boolean switched = mCurrentSectionId != sectionId;
         mCurrentSectionId = sectionId;
+        rebuildCategoryBar();
         paintCachedSnapshot(sectionId, switched);
         syncNavHighlight(sectionId);
 
@@ -1584,11 +1591,72 @@ public class MobileBrowseActivity extends MobileActivity
             return;
         }
         rebuildBottomNav();
+        rebuildCategoryBar();
         if (mYouShowing) {
             rebuildYouRows();
         }
         openPendingDownloads();
     };
+
+    private boolean isCategorySection(int id) {
+        for (int categoryId : CATEGORY_IDS) if (categoryId == id) return true;
+        return false;
+    }
+
+    private void rebuildCategoryBar() {
+        mCategoryItems.removeAllViews();
+        for (int index = 0; index < CATEGORY_IDS.length; index++) {
+            final int id = CATEGORY_IDS[index];
+            BrowseSection section = null;
+            for (BrowseSection candidate : mSections) {
+                if (candidate.isEnabled() && candidate.getId() == id) { section = candidate; break; }
+            }
+            if (section == null) continue;
+            LinearLayout tab = new LinearLayout(this);
+            tab.setOrientation(LinearLayout.VERTICAL);
+            tab.setGravity(android.view.Gravity.CENTER);
+            tab.setPadding(dp(13), 0, dp(13), 0);
+            TextView label = new TextView(this);
+            label.setText(getString(CATEGORY_TITLES[index]));
+            label.setTextSize(14);
+            label.setTypeface(null, android.graphics.Typeface.BOLD);
+            label.setGravity(android.view.Gravity.CENTER);
+            label.setSingleLine(true);
+            label.setTextColor(getColor(id == mCurrentSectionId
+                    ? R.color.mobile_color_progress : R.color.mobile_color_on_surface));
+            tab.addView(label, new LinearLayout.LayoutParams(-2, 0, 1));
+            View indicator = new View(this);
+            indicator.setBackgroundColor(getColor(id == mCurrentSectionId
+                    ? R.color.mobile_color_progress : android.R.color.transparent));
+            tab.addView(indicator, new LinearLayout.LayoutParams(-1, dp(3)));
+            tab.setOnClickListener(v -> {
+                mSectionFromYou = false;
+                hideYouPanel();
+                onSectionChosen(id);
+            });
+            mCategoryItems.addView(tab, new LinearLayout.LayoutParams(-2, -1));
+        }
+    }
+
+    private int dp(int value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
+    }
+
+    private void setNavigationBarsHidden(boolean hidden) {
+        if (mBarsHidden == hidden) return;
+        mBarsHidden = hidden;
+        animateBar(mCategoryScroll, hidden, -mCategoryScroll.getHeight());
+        animateBar(mBottomNav, hidden, mBottomNav.getHeight());
+    }
+
+    private void animateBar(View view, boolean hidden, float distance) {
+        view.animate().cancel();
+        if (!hidden) view.setVisibility(View.VISIBLE);
+        view.animate().translationY(hidden ? distance : 0).alpha(hidden ? 0f : 1f)
+                .setDuration(220).withEndAction(() -> {
+                    if (hidden && mBarsHidden) view.setVisibility(View.GONE);
+                }).start();
+    }
 
     /**
      * What the bottom nav currently shows (ids, titles, icons, in order), so an unchanged section
@@ -1797,9 +1865,7 @@ public class MobileBrowseActivity extends MobileActivity
     }
 
     /**
-     * The bottom nav shows ONLY the {@link #PREFERRED_SECTION_IDS} (in priority
-     * order, when present and enabled) — no backfill from the other delivered
-     * sections; everything else lives in the You panel. BrowsePresenter can deliver
+     * The bottom nav shows Home, Shorts, Downloads and You. BrowsePresenter can deliver
      * many more sections, and the {@link BottomNavigationView} itself hard-caps at
      * {@link #MAX_NAV_ITEMS}.
      */

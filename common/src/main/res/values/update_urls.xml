@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="update_urls">
-        <!-- No SingeeIche release feed is configured yet; in-app updates are disabled. -->
+        <item>https://raw.githubusercontent.com/alex-rek/SingeeIche/main/update.json</item>
     </string-array>
 </resources>

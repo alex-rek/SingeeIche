@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="mobile_player_back">Назад</string>
+    <string name="mobile_card_go_to_channel">Перейти на канал</string>
     <string name="mobile_player_minimize">Свернуть</string>
     <string name="mobile_player_play">Воспроизвести</string>
     <string name="mobile_player_pause">Пауза</string>
@@ -354,6 +355,8 @@
     <string name="mobile_theme_system">Системная по умолчанию</string>
     <string name="mobile_theme_light">Светлая</string>
     <string name="mobile_theme_dark">Тёмная</string>
+    <string name="mobile_theme_pure_black">Чёрная тема</string>
+    <string name="mobile_theme_pure_black_summary">Использовать чисто чёрный фон в тёмной теме</string>
     <string name="mobile_about_star">Поставить звезду SingeeIche на GitHub</string>
     <string name="mobile_about_star_desc">Бесплатно и с открытым исходным кодом. Звезда помогает другим найти его</string>
     <string name="mobile_about_share">Поделиться SingeeIche</string>
@@ -361,22 +364,4 @@
     <string name="mobile_about_share_text">SingeeIche — клиент YouTube для телефонов на базе SmartTube: %1$s</string>
     <string name="sabr_vod_option">Предпочитать SABR, даже когда ссылки работают (экспериментально; следующее VOD)</string>
     <string name="sabr_vod_stopped">Экспериментальное воспроизведение SABR остановлено. Нажмите воспроизведение для повтора или отключите SABR в настройках.</string>
-    <string name="mobile_peertube_entry">PeerTube</string>
-    <string name="mobile_peertube_title">PeerTube</string>
-    <string name="mobile_peertube_server">Серверы</string>
-    <string name="mobile_peertube_search_hint">Поиск видео в PeerTube</string>
-    <string name="mobile_peertube_search">Найти</string>
-    <string name="mobile_peertube_home">Видео выбранного сервера</string>
-    <string name="mobile_peertube_add_server">Добавить сервер</string>
-    <string name="mobile_peertube_discover">Найти серверы</string>
-    <string name="mobile_peertube_no_servers">Сервер не выбран. Ищите по всей сети PeerTube или добавьте сервер для просмотра его видео.</string>
-    <string name="mobile_peertube_loading">Загрузка PeerTube…</string>
-    <string name="mobile_peertube_empty">Видео не найдены.</string>
-    <string name="mobile_peertube_search_error">Не удалось выполнить поиск PeerTube. Проверьте подключение и повторите попытку.</string>
-    <string name="mobile_peertube_server_saved">Сервер добавлен</string>
-    <string name="mobile_peertube_choose_server">Выберите сервер PeerTube</string>
-    <string name="mobile_peertube_player">Плеер PeerTube</string>
-    <string name="mobile_peertube_stop">Остановить воспроизведение</string>
-    <string name="mobile_peertube_video_unavailable">Для этого видео нет поддерживаемого потока.</string>
-    <string name="mobile_peertube_instance_label">%1$s · %2$s видео</string>
 </resources>

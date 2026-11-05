@@ -11,7 +11,8 @@ the phone-oriented SmartTube fork, and keeps the upstream MIT license and third-
 - Picture-in-picture, a draggable mini-player, and background audio playback.
 - Touch-first browsing, search, subscriptions, playlists, and watch history.
 - Optional offline video and audio downloads.
-- A separate PeerTube section with federation search, instance discovery, instance feeds, PiP, and background playback.
+- Horizontal YouTube category navigation, Shorts, and a dedicated downloads tab.
+- In-app checks and signed APK downloads from GitHub Releases.
 
 SingeeIche is an independent community client. It is not affiliated with or endorsed by Google,
 YouTube, or the SmartTube maintainers. YouTube availability and playback behavior can change.
@@ -29,6 +30,5 @@ The debug APK is written under `smarttubetv/build/outputs/apk/stmobile/debug/`.
 
 ## Credits and license
 
-The app is based on [SmartTube](https://github.com/yuliskov/SmartTube) and its contributors. The
-PeerTube section adapts the local PeerIche and RussTube projects. See [LICENSE](LICENSE) and
-[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for attributions and license details.
+The app is based on [SmartTube](https://github.com/yuliskov/SmartTube) and its contributors. See
+[LICENSE](LICENSE) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for attributions and license details.
