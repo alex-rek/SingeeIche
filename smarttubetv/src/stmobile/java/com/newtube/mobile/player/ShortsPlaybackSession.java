@@ -9,10 +9,15 @@ import java.util.List;
 
 /** In-process queue handed from the Shorts feed to the full-screen player. */
 public final class ShortsPlaybackSession {
+    public interface RefreshListener {
+        void onRefreshed(@Nullable Video firstVideo);
+    }
     private static final List<Video> VIDEOS = new ArrayList<>();
     private static int sCurrentIndex = -1;
     private static boolean sActive;
     private static boolean sContinuationRequested;
+    private static boolean sRefreshRequested;
+    @Nullable private static RefreshListener sRefreshListener;
 
     private ShortsPlaybackSession() {
     }
@@ -31,6 +36,34 @@ public final class ShortsPlaybackSession {
         if (VIDEOS.size() > oldSize) {
             sContinuationRequested = false;
         }
+    }
+
+    public static synchronized void setRefreshListener(@Nullable RefreshListener listener) {
+        sRefreshListener = listener;
+    }
+
+    public static synchronized boolean requestRefresh() {
+        if (!sActive || sRefreshRequested) return false;
+        sRefreshRequested = true;
+        return true;
+    }
+
+    /** Replace the swipe queue with the refreshed Shorts feed and open its first playable item. */
+    public static synchronized void onFeedRefreshed(@Nullable List<Video> videos) {
+        if (!sRefreshRequested || videos == null || videos.isEmpty()) return;
+        List<Video> fresh = new ArrayList<>();
+        for (Video video : videos) {
+            if (video != null && video.hasVideo()) fresh.add(video);
+        }
+        if (fresh.isEmpty()) return;
+        VIDEOS.clear();
+        VIDEOS.addAll(fresh);
+        sCurrentIndex = 0;
+        sActive = true;
+        sContinuationRequested = false;
+        sRefreshRequested = false;
+        RefreshListener listener = sRefreshListener;
+        if (listener != null) listener.onRefreshed(VIDEOS.get(0));
     }
 
     public static synchronized boolean contains(Video video) {
@@ -81,6 +114,8 @@ public final class ShortsPlaybackSession {
         sCurrentIndex = -1;
         sActive = false;
         sContinuationRequested = false;
+        sRefreshRequested = false;
+        sRefreshListener = null;
     }
 
     private static void addUnique(@Nullable List<Video> videos) {

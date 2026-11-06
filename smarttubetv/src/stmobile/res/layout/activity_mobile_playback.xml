@@ -110,10 +110,10 @@
                     android:layout_marginStart="4dp"
                     android:layout_marginTop="4dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="@string/mobile_player_minimize"
+                    android:contentDescription="@string/mobile_player_back"
                     android:padding="12dp"
                     android:scaleType="fitCenter"
-                    android:src="@drawable/ic_player_minimize"
+                    android:src="@drawable/ic_mobile_back_arrow"
                     android:tint="@color/mobile_player_on_video" />
 
                 <!-- paddingEnd must clear the full top-right options row (mobile_player_options):
@@ -128,7 +128,7 @@
                     android:maxLines="2"
                     android:paddingStart="56dp"
                     android:paddingTop="12dp"
-                    android:paddingEnd="148dp"
+                    android:paddingEnd="196dp"
                     android:paddingBottom="12dp"
                     android:shadowColor="#80000000"
                     android:shadowDx="0"
@@ -150,6 +150,17 @@
                     android:layout_marginTop="4dp"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
+
+                    <ImageButton
+                        android:id="@+id/mobile_player_window"
+                        android:layout_width="@dimen/mobile_player_icon_button"
+                        android:layout_height="@dimen/mobile_player_icon_button"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="@string/mobile_player_window"
+                        android:padding="12dp"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/ic_player_pip"
+                        android:tint="@color/mobile_player_on_video" />
 
                     <!-- Cast picker (casting wave): lists DIAL-discovered TVs + paired screens.
                          Route B only for now; see com.newtube.mobile.casting. -->

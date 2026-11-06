@@ -57,7 +57,11 @@
     <string name="mobile_settings_video_language_default">Automático (%1$s)</string>
     <string name="mobile_settings_translation_group">Traducción de vídeos</string>
     <string name="mobile_settings_translate_metadata">Traducir títulos y descripciones</string>
-    <string name="mobile_settings_translate_metadata_summary">La traducción se realiza en este dispositivo. Los modelos se descargan por Wi-Fi.</string>
+    <string name="mobile_settings_translate_metadata_summary">La traducción se realiza en este dispositivo.</string>
+    <string name="mobile_settings_translation_wifi_only">Descargar modelos de idioma por Wi-Fi</string>
+    <string name="mobile_settings_translation_wifi_only_summary">Si se desactiva, también se pueden descargar con datos móviles</string>
+    <string name="mobile_settings_translation_subtitles">Traducir subtítulos</string>
+    <string name="mobile_settings_translation_subtitles_summary">Mostrar la traducción mientras estén activados los subtítulos originales</string>
     <string name="mobile_settings_translation_language">Idioma de traducción</string>
     <string name="mobile_settings_translation_auto">Idioma de la interfaz (%1$s)</string>
     <string name="mobile_settings_translation_original">Mostrar el texto original</string>

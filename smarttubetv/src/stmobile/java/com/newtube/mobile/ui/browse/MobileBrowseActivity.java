@@ -2384,6 +2384,7 @@ public class MobileBrowseActivity extends MobileActivity
             checkFeedRunway();
             if (mCurrentSectionId == MediaGroup.TYPE_SHORTS) {
                 ShortsPlaybackSession.append(mCurrentVideos);
+                ShortsPlaybackSession.onFeedRefreshed(mCurrentVideos);
                 maybeStartShortsPlayback();
             }
 

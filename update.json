@@ -1,6 +1,19 @@
 {
   "package": {
-    "downloadUrl": "https://github.com/alex-rek/SingeeIche/releases/download/v0.1.6/SingeeIche_0.1.6_universal.apk"
+    "downloadUrl": "https://github.com/alex-rek/SingeeIche/releases/download/v0.1.7/SingeeIche_0.1.7_universal.apk"
+  },
+  "0.1.7": {
+    "versionCode": 8,
+    "changelog": [
+      "Back now stops playback and returns to the previous page; a dedicated player button opens picture-in-picture.",
+      "Added Wi-Fi-only language model downloads and translated subtitles.",
+      "Shorts swipes return to the previous clip or refresh the feed; brightness and volume swipe gestures are disabled in Shorts."
+    ],
+    "changelog_ru": [
+      "Кнопка «Назад» останавливает воспроизведение и возвращает на предыдущую страницу; отдельная кнопка открывает видео в плавающем окне.",
+      "Добавлен выбор загрузки языковых модулей только по Wi-Fi и перевод субтитров.",
+      "В Shorts свайп вниз возвращает предыдущий ролик или обновляет ленту; жесты яркости и громкости отключены."
+    ]
   },
   "0.1.6": {
     "versionCode": 7,

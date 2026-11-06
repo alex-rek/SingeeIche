@@ -19,6 +19,7 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Icon;
 import android.os.Build;
 import android.os.Bundle;
@@ -150,6 +151,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Touch player - PLAYER POLISH wave.
@@ -189,6 +191,9 @@ public class MobilePlaybackActivity extends MobileActivity
     private boolean mShortsMode;
     private boolean mShortsOwnsFullscreen;
     @Nullable private BottomNavigationView mShortsBottomNav;
+    @Nullable private ImageButton mWindowButton;
+    @Nullable private TextView mTranslatedCaptions;
+    private int mCaptionTranslationGeneration;
     private TextView mZoomHintView;
     private DoubleTapPlayerViewImpl mPlayerView;
     private YouTubeOverlay mYouTubeOverlay;
@@ -677,6 +682,11 @@ public class MobilePlaybackActivity extends MobileActivity
     private void bindViews() {
         mContainer = findViewById(R.id.mobile_player_container);
         mVideoArea = findViewById(R.id.mobile_video_area);
+        mWindowButton = findViewById(R.id.mobile_player_window);
+        if (mWindowButton != null) {
+            mWindowButton.setOnClickListener(v -> enterPipFromMenu());
+        }
+        setupTranslatedCaptionsView();
         mShortsBottomNav = findViewById(R.id.mobile_shorts_bottom_nav);
         if (mShortsBottomNav != null) {
             mShortsBottomNav.getMenu().add(0, 1, 0, R.string.header_home).setIcon(R.drawable.ic_nav_home);
@@ -941,6 +951,8 @@ public class MobilePlaybackActivity extends MobileActivity
                             animateShortsSwitch(deltaY < 0 ? -1 : 1);
                             mPresenter.openVideo(next);
                         }
+                    } else if (deltaY > 0 && ShortsPlaybackSession.requestRefresh()) {
+                        BrowsePresenter.instance(MobilePlaybackActivity.this).refresh();
                     }
                     requestMoreShortsIfNearEnd();
                 } else if (deltaX < 0) {
@@ -1390,6 +1402,7 @@ public class MobilePlaybackActivity extends MobileActivity
         // Our own lightweight UI listener (separate from ExoPlayerController's): drives the
         // buffering spinner, the play/pause/replay icon and the end-of-video state.
         mPlayer.addListener(mUiPlayerListener);
+        mPlayer.addListener(mCaptionTranslationListener);
 
         // Apply the user's subtitle style to the PlayerView's built-in SubtitleView (see gap #2).
         // Registered AFTER setPlayer() so our (styled) SubtitleManager is the last TextOutput and
@@ -1423,6 +1436,8 @@ public class MobilePlaybackActivity extends MobileActivity
 
         stopProgressUpdates();
         mPlayer.removeListener(mUiPlayerListener);
+        mPlayer.removeListener(mCaptionTranslationListener);
+        mCaptionTranslationGeneration++;
 
         // Tear down the debug overlay (removes its Player listener) and drop the subtitle manager
         // before the player is released. SubtitleManager registers on PlayerData via a WeakHashSet,
@@ -1965,17 +1980,9 @@ public class MobilePlaybackActivity extends MobileActivity
         if (mClosing) {
             return;
         }
-        // NEWTUBE(motion): like YouTube - Back leaves fullscreen first, then minimizes.
-        if (!mIsInPip && !mPipEnterPending
-                && layoutOrientation() == Configuration.ORIENTATION_LANDSCAPE) {
-            mBackPreview = false;
-            toggleFullscreen();
-            return;
-        }
-        if (mBackPreview || canMinimizeByBack()) {
-            minimizeByBack();
-            return;
-        }
+        // Back always dismisses the playing video. PiP is an explicit player action; background
+        // playback remains governed independently by onUserLeaveHint()/the media service.
+        mBackPreview = false;
         if (canAnimateClose()) {
             animateCloseThenFinish();
             return;
@@ -2012,24 +2019,14 @@ public class MobilePlaybackActivity extends MobileActivity
 
     private void onBackGestureStarted() {
         mBackPreview = false;
-        if (mClosing || !canMinimizeByBack()) {
-            return;
-        }
-        beginMinimizeMorph();
-        mBackPreview = true;
     }
 
     private void onBackGestureProgressed(float progress) {
-        if (mBackPreview) {
-            applyMorph(BACK_PREVIEW_FRACTION * Motion.STANDARD_DECELERATE.getInterpolation(progress));
-        }
+        // Back now closes playback rather than previewing a minimize gesture.
     }
 
     private void onBackGestureCancelled() {
-        if (mBackPreview) {
-            mBackPreview = false;
-            animateMorph(0f, 180, Motion.STANDARD, this::resetMorph);
-        }
+        mBackPreview = false;
     }
 
     private void minimizeByBack() {
@@ -5379,6 +5376,9 @@ public class MobilePlaybackActivity extends MobileActivity
                 || (mExoPlayerController != null && mExoPlayerController.isHoldSpeedOn())) {
             return PlayerContainerLayout.SWIPE_NONE;
         }
+        // Shorts owns vertical swipes in PinchZoomLayout; keep player brightness/volume gestures
+        // and the fullscreen/mini-player drag recognizers out of that gesture stream.
+        if (mShortsMode) return PlayerContainerLayout.SWIPE_NONE;
         mSwipeDownRawX = downRawX;
         boolean vertical = direction == PlayerContainerLayout.UP || direction == PlayerContainerLayout.DOWN;
         if (!vertical) {
@@ -5481,7 +5481,7 @@ public class MobilePlaybackActivity extends MobileActivity
 
     /** Fullscreen: SWIPE_BRIGHTNESS / SWIPE_VOLUME for a swipe that began at {@code rawX}, if any. */
     private int levelSwipeAt(float rawX) {
-        if (!PlayerGesturePrefs.isLevelSwipesOn(this) || isCastOverlayShown()) {
+        if (mShortsMode || !PlayerGesturePrefs.isLevelSwipesOn(this) || isCastOverlayShown()) {
             return PlayerContainerLayout.SWIPE_NONE;
         }
         int[] at = new int[2];
@@ -6800,6 +6800,80 @@ public class MobilePlaybackActivity extends MobileActivity
 
         mSubtitleManager = new Media3SubtitleManager(subtitleView);
         mPlayer.addListener(mSubtitleManager);
+    }
+
+    private final Player.Listener mCaptionTranslationListener = new Player.Listener() {
+        @Override
+        public void onCues(androidx.media3.common.text.CueGroup cueGroup) {
+            translateSubtitleCues(cueGroup);
+        }
+    };
+
+    private void setupTranslatedCaptionsView() {
+        if (mVideoArea == null || mTranslatedCaptions != null) return;
+        TextView captions = new TextView(this);
+        captions.setTextColor(Color.WHITE);
+        captions.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
+        captions.setGravity(Gravity.CENTER);
+        captions.setPadding(dp(12), dp(6), dp(12), dp(6));
+        captions.setBackground(new ColorDrawable(0xB8000000));
+        captions.setShadowLayer(2f, 1f, 1f, Color.BLACK);
+        captions.setMaxLines(4);
+        captions.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+        captions.setClickable(false);
+        captions.setFocusable(false);
+        captions.setVisibility(View.GONE);
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT,
+                Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
+        lp.setMargins(dp(20), 0, dp(20), dp(78));
+        captions.setElevation(dp(2));
+        mVideoArea.addView(captions, lp);
+        mTranslatedCaptions = captions;
+    }
+
+    private void translateSubtitleCues(androidx.media3.common.text.CueGroup cueGroup) {
+        if (mTranslatedCaptions == null) return;
+        final int generation = ++mCaptionTranslationGeneration;
+        VideoTranslationData settings = VideoTranslationData.instance(this);
+        androidx.media3.ui.SubtitleView nativeView = mPlayerView != null
+                ? mPlayerView.getSubtitleView() : null;
+        if (!settings.isSubtitleTranslationEnabled() || !areCaptionsOn()) {
+            mTranslatedCaptions.setVisibility(View.GONE);
+            if (nativeView != null && areCaptionsOn()) nativeView.setVisibility(View.VISIBLE);
+            return;
+        }
+
+        List<String> lines = new ArrayList<>();
+        for (androidx.media3.common.text.Cue cue : cueGroup.cues) {
+            if (cue.text != null && !TextUtils.isEmpty(cue.text.toString().trim())) {
+                lines.add(cue.text.toString().trim());
+            }
+        }
+        if (lines.isEmpty()) {
+            mTranslatedCaptions.setText("");
+            mTranslatedCaptions.setVisibility(View.GONE);
+            if (nativeView != null) nativeView.setVisibility(View.VISIBLE);
+            return;
+        }
+
+        String[] translated = new String[lines.size()];
+        AtomicInteger pending = new AtomicInteger(lines.size());
+        for (int i = 0; i < lines.size(); i++) {
+            final int index = i;
+            VideoMetadataTranslation.translate(this, lines.get(i), result -> {
+                translated[index] = result;
+                if (pending.decrementAndGet() == 0) {
+                    runOnUiThread(() -> {
+                        if (generation != mCaptionTranslationGeneration || mTranslatedCaptions == null
+                                || !VideoTranslationData.instance(this).isSubtitleTranslationEnabled()) return;
+                        mTranslatedCaptions.setText(TextUtils.join("\n", translated));
+                        mTranslatedCaptions.setVisibility(View.VISIBLE);
+                        if (nativeView != null) nativeView.setVisibility(View.GONE);
+                    });
+                }
+            });
+        }
     }
 
     /** Build the media3 stats-for-nerds over the debug overlay group. Mirrors the TV fragment. */
@@ -9078,6 +9152,13 @@ public class MobilePlaybackActivity extends MobileActivity
         boolean inShortsSession = ShortsPlaybackSession.contains(item);
         if (inShortsSession) {
             mShortsMode = true;
+            ShortsPlaybackSession.setRefreshListener(video -> runOnUiThread(() -> {
+                if (video != null && mShortsMode && mPresenter != null) {
+                    animateShortsSwitch(1);
+                    mPresenter.openVideo(video);
+                }
+            }));
+            if (mSwipeLevels != null) mSwipeLevels.setBrightnessActive(false);
             if (mShortsBottomNav != null) mShortsBottomNav.setVisibility(View.VISIBLE);
             if (mPresenter != null) {
                 mPresenter.getController(VideoLoaderController.class).preloadVideo(ShortsPlaybackSession.peekNext());
@@ -9091,6 +9172,7 @@ public class MobilePlaybackActivity extends MobileActivity
             requestMoreShortsIfNearEnd();
         } else if (mShortsMode) {
             mShortsMode = false;
+            ShortsPlaybackSession.setRefreshListener(null);
             if (mShortsBottomNav != null) mShortsBottomNav.setVisibility(View.GONE);
             ShortsPlaybackSession.clear();
             if (mShortsOwnsFullscreen) {

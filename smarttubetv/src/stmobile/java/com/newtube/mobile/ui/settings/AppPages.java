@@ -81,6 +81,13 @@ final class AppPages {
                     translation.setEnabled(enabled);
                     BrowsePresenter.instance(context).refresh();
                 }));
+        rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_translation_wifi_only),
+                context.getString(R.string.mobile_settings_translation_wifi_only_summary),
+                translation::isWifiOnly, translation::setWifiOnly)
+                .enabledWhen(() -> translation.isEnabled() || translation.isSubtitleTranslationEnabled()));
+        rows.add(SettingsRow.toggle(context.getString(R.string.mobile_settings_translation_subtitles),
+                context.getString(R.string.mobile_settings_translation_subtitles_summary),
+                translation::isSubtitleTranslationEnabled, translation::setSubtitleTranslationEnabled));
         SettingsRow.Choice<String> translationLanguage = SettingsRow.choice(
                 context.getString(R.string.mobile_settings_translation_language));
         Locale displayLocale = context.getResources().getConfiguration().getLocales().get(0);

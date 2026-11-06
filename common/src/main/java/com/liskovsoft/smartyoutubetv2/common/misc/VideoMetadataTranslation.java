@@ -64,9 +64,11 @@ public final class VideoMetadataTranslation {
                         return;
                     }
                     Translator translator = getTranslator(source, target);
-                    DownloadConditions conditions = new DownloadConditions.Builder()
-                            .requireWifi()
-                            .build();
+                    DownloadConditions.Builder conditionsBuilder = new DownloadConditions.Builder();
+                    if (VideoTranslationData.instance(context).isWifiOnly()) {
+                        conditionsBuilder.requireWifi();
+                    }
+                    DownloadConditions conditions = conditionsBuilder.build();
                     translator.downloadModelIfNeeded(conditions)
                             .continueWithTask(task -> {
                                 if (!task.isSuccessful()) {

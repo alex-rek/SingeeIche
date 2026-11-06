@@ -38,4 +38,6 @@
     <string name="mobile_settings_search_kw_gesture_levels">gestos brillo volumen</string>
     <string name="mobile_settings_search_kw_gesture_seek">gestos adelantar retroceder saltar</string>
     <string name="mobile_settings_search_kw_translate_metadata">traducir traducción vídeo título descripción original idioma</string>
+    <string name="mobile_settings_search_kw_translation_wifi">wifi wi-fi datos móviles descargar modelos</string>
+    <string name="mobile_settings_search_kw_translation_subtitles">traducir subtítulos traducción</string>
 </resources>

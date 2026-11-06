@@ -41,4 +41,6 @@
     <string name="mobile_settings_search_kw_gesture_levels">gestures brightness volume</string>
     <string name="mobile_settings_search_kw_gesture_seek">gestures scrub skip forward rewind</string>
     <string name="mobile_settings_search_kw_translate_metadata">translate translation video title description original language</string>
+    <string name="mobile_settings_search_kw_translation_wifi">wifi wi-fi mobile data download models</string>
+    <string name="mobile_settings_search_kw_translation_subtitles">translate subtitles captions translation</string>
 </resources>

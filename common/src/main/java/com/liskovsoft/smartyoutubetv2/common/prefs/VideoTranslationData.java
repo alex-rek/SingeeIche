@@ -54,6 +54,22 @@ public final class VideoTranslationData extends DataSaverBase {
         refreshCachedValues(mContext);
     }
 
+    public boolean isWifiOnly() {
+        return getBoolean(3, true);
+    }
+
+    public void setWifiOnly(boolean wifiOnly) {
+        setBoolean(3, wifiOnly);
+    }
+
+    public boolean isSubtitleTranslationEnabled() {
+        return getBoolean(4, false);
+    }
+
+    public void setSubtitleTranslationEnabled(boolean enabled) {
+        setBoolean(4, enabled);
+    }
+
     public static boolean isTranslationEnabled() {
         return sEnabled;
     }

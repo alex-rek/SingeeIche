@@ -72,6 +72,8 @@ final class SettingsSearch {
             {R.string.mobile_theme_pure_black, R.string.mobile_settings_search_kw_pure_black},
             {R.string.mobile_settings_country, R.string.mobile_settings_search_kw_country},
             {R.string.mobile_settings_translate_metadata, R.string.mobile_settings_search_kw_translate_metadata},
+            {R.string.mobile_settings_translation_wifi_only, R.string.mobile_settings_search_kw_translation_wifi},
+            {R.string.mobile_settings_translation_subtitles, R.string.mobile_settings_search_kw_translation_subtitles},
             {R.string.mobile_settings_start_screen, R.string.mobile_settings_search_kw_start_screen},
             {R.string.mobile_settings_interface_size, R.string.mobile_settings_search_kw_interface_size},
             {R.string.mobile_settings_tabs, R.string.mobile_settings_search_kw_tabs},
