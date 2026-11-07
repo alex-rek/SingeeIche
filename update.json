@@ -1,6 +1,15 @@
 {
   "package": {
-    "downloadUrl": "https://github.com/alex-rek/SingeeIche/releases/download/v0.1.7/SingeeIche_0.1.7_universal.apk"
+    "downloadUrl": "https://github.com/alex-rek/SingeeIche/releases/download/v0.1.8/SingeeIche_0.1.8_universal.apk"
+  },
+  "0.1.8": {
+    "versionCode": 9,
+    "changelog": [
+      "Capped feed fling speed and disabled the grid's elastic overscroll so short corrective swipes do not skip several cards."
+    ],
+    "changelog_ru": [
+      "Ограничена скорость прокрутки ленты и отключён упругий эффект списка, чтобы короткий корректирующий свайп не перескакивал через несколько карточек."
+    ]
   },
   "0.1.7": {
     "versionCode": 8,
