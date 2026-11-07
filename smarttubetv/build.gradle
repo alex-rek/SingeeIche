@@ -161,7 +161,7 @@ android {
         minSdk = project.ext.minSdkVersion
         targetSdk = project.ext.targetSdkVersion
         versionCode 2387
-        versionName "31.97"
+        versionName "32.71"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         // NEWTUBE(fdroid): reproducible builds - with SOURCE_DATE_EPOCH set (F-Droid's build server
         // sets it to the commit time) the stamp is that, not the wall clock, so two builds of one

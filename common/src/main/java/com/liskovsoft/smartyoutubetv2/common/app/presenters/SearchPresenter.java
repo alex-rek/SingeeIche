@@ -63,6 +63,8 @@ public class SearchPresenter extends BasePresenter<SearchView> implements VideoG
 
     @Override
     public void onViewInitialized() {
+        super.onViewInitialized();
+
         if (!AccountsData.instance(getContext()).isPasswordAccepted()) {
             getView().finishReally();
             return;

@@ -893,7 +893,7 @@ public class AppDialogUtil {
         PlayerTweaksData playerTweaksData = PlayerTweaksData.instance(context);
         List<OptionItem> options = new ArrayList<>();
 
-        options.add(UiOptionItem.from(context.getString(R.string.default_lang),
+        options.add(UiOptionItem.from(context.getString(R.string.default_option),
                 context.getString(R.string.default_stack_desc),
                 option -> {
                     playerTweaksData.setPlayerDataSource(PlayerTweaksData.PLAYER_DATA_SOURCE_DEFAULT);
@@ -1164,7 +1164,7 @@ public class AppDialogUtil {
                         GeneralData.instance(context).setLastPlaylistId(playlistInfo.getPlaylistId());
                         GeneralData.instance(context).setLastPlaylistTitle(playlistInfo.getTitle());
                     },
-                    playlistInfo.isSelected()));
+                    playlistInfo.isSelected() || Helpers.equals(playlistInfo.getPlaylistId(), video.playlistId)));
         }
 
         // No category title: it would repeat the sheet's own title word for word.

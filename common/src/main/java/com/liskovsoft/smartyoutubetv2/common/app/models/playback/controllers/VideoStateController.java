@@ -665,6 +665,11 @@ public class VideoStateController extends BasePlayerController {
         return mIsPlayEnabled;
     }
 
+    /** SmartTube 32.71 API name retained alongside the mobile fork's existing getter. */
+    public boolean isPlayEnabled() {
+        return getPlayEnabled();
+    }
+
     public void setPlayEnabled(boolean isPlayEnabled) {
         Log.d(TAG, "setPlayEnabled %s", isPlayEnabled);
         mIsPlayEnabled = isPlayEnabled;

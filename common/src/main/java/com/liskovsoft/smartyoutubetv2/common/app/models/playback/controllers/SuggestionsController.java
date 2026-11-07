@@ -523,7 +523,7 @@ public class SuggestionsController extends BasePlayerController {
     }
 
     private void updateLiveDescription() {
-        if (getPlayer() == null) {
+        if (getPlayer() == null || !getPlayer().isPlaying()) {
             return;
         }
 
@@ -734,6 +734,10 @@ public class SuggestionsController extends BasePlayerController {
         if (next != null) {
             next.fromQueue = true;
             result = next;
+        } else if (!getVideo().isShuffled &&
+                Helpers.startsWith(getVideo().getPlaylistId(), "RD") &&
+                getVideo().hasNextPlaylist()) {
+            result = Video.from(getVideo().nextMediaItem);
         } else if (mNextSectionVideo != null && !getVideo().isShuffled) {
             result = mNextSectionVideo;
         } else if (getVideo().nextMediaItem != null) {
@@ -1114,8 +1118,14 @@ public class SuggestionsController extends BasePlayerController {
             return;
         }
 
-        getPlayer().updateSuggestions(video.getGroup());
-        focusAndContinueIfNeeded(video.getGroup(), () -> findNextSectionVideoIfNeeded(video));
+        VideoGroup group = video.getGroup();
+
+        if (group != null) {
+            // Make the index consistent with the other sections.
+            group.setPosition(-1);
+            getPlayer().updateSuggestions(group);
+            focusAndContinueIfNeeded(group, () -> findNextSectionVideoIfNeeded(video));
+        }
     }
 
     private void markAsQueueIfNeeded(Video item) {
