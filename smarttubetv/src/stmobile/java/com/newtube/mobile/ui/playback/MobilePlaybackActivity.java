@@ -34,6 +34,7 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.accessibility.CaptioningManager;
 import android.view.Window;
 import android.view.WindowInsets;
 import android.view.animation.DecelerateInterpolator;
@@ -123,6 +124,8 @@ import com.liskovsoft.smartyoutubetv2.common.prefs.MainUIData;
 import com.liskovsoft.smartyoutubetv2.common.prefs.PlayerData;
 import com.liskovsoft.smartyoutubetv2.common.prefs.VideoTranslationData;
 import com.liskovsoft.smartyoutubetv2.common.prefs.PlayerTweaksData;
+import com.liskovsoft.smartyoutubetv2.common.prefs.common.DataChangeBase.OnDataChange;
+import com.liskovsoft.smartyoutubetv2.common.exoplayer.other.SubtitleStyle;
 import com.liskovsoft.smartyoutubetv2.common.utils.AppDialogUtil;
 import com.liskovsoft.smartyoutubetv2.common.utils.ClickbaitRemover;
 import com.liskovsoft.smartyoutubetv2.common.utils.Utils;
@@ -193,6 +196,7 @@ public class MobilePlaybackActivity extends MobileActivity
     @Nullable private BottomNavigationView mShortsBottomNav;
     @Nullable private ImageButton mWindowButton;
     @Nullable private TextView mTranslatedCaptions;
+    private final OnDataChange mTranslatedCaptionStyleListener = this::applyTranslatedCaptionStyle;
     private int mCaptionTranslationGeneration;
     private TextView mZoomHintView;
     private DoubleTapPlayerViewImpl mPlayerView;
@@ -1438,6 +1442,7 @@ public class MobilePlaybackActivity extends MobileActivity
         mPlayer.removeListener(mUiPlayerListener);
         mPlayer.removeListener(mCaptionTranslationListener);
         mCaptionTranslationGeneration++;
+        PlayerData.instance(this).removeOnChange(mTranslatedCaptionStyleListener);
 
         // Tear down the debug overlay (removes its Player listener) and drop the subtitle manager
         // before the player is released. SubtitleManager registers on PlayerData via a WeakHashSet,
@@ -6812,12 +6817,8 @@ public class MobilePlaybackActivity extends MobileActivity
     private void setupTranslatedCaptionsView() {
         if (mVideoArea == null || mTranslatedCaptions != null) return;
         TextView captions = new TextView(this);
-        captions.setTextColor(Color.WHITE);
-        captions.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
         captions.setGravity(Gravity.CENTER);
         captions.setPadding(dp(12), dp(6), dp(12), dp(6));
-        captions.setBackground(new ColorDrawable(0xB8000000));
-        captions.setShadowLayer(2f, 1f, 1f, Color.BLACK);
         captions.setMaxLines(4);
         captions.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
         captions.setClickable(false);
@@ -6830,6 +6831,48 @@ public class MobilePlaybackActivity extends MobileActivity
         captions.setElevation(dp(2));
         mVideoArea.addView(captions, lp);
         mTranslatedCaptions = captions;
+        PlayerData.instance(this).setOnChange(mTranslatedCaptionStyleListener);
+        applyTranslatedCaptionStyle();
+    }
+
+    /** Keep the translated-caption overlay consistent with the subtitle style selected in settings. */
+    private void applyTranslatedCaptionStyle() {
+        if (mTranslatedCaptions == null) return;
+
+        PlayerData playerData = PlayerData.instance(this);
+        SubtitleStyle selected = playerData.getSubtitleStyle();
+        int textColor = Color.WHITE;
+        int backgroundColor = Color.TRANSPARENT;
+        int edgeType = 0;
+        int edgeColor = Color.BLACK;
+        float fontScale = 1f;
+
+        if (selected.isSystem()) {
+            CaptioningManager captioningManager =
+                    (CaptioningManager) getSystemService(Context.CAPTIONING_SERVICE);
+            if (captioningManager != null) {
+                CaptioningManager.CaptionStyle style = captioningManager.getUserStyle();
+                textColor = style.foregroundColor;
+                backgroundColor = style.backgroundColor;
+                edgeType = style.edgeType;
+                edgeColor = style.edgeColor;
+                fontScale = captioningManager.getFontScale();
+            }
+        } else {
+            textColor = ContextCompat.getColor(this, selected.subsColorResId);
+            backgroundColor = ContextCompat.getColor(this, selected.backgroundColorResId);
+            edgeType = selected.captionStyle;
+        }
+
+        mTranslatedCaptions.setTextColor(textColor);
+        mTranslatedCaptions.setBackground(new ColorDrawable(backgroundColor));
+        mTranslatedCaptions.setTextSize(TypedValue.COMPLEX_UNIT_SP,
+                20f * playerData.getSubtitleScale() * fontScale);
+
+        // Keep the same outline/drop-shadow choices used by Media3SubtitleManager.
+        float radius = edgeType == 1 || edgeType == 2 ? 2f : 0f;
+        float offset = edgeType == 2 ? 1f : 0f;
+        mTranslatedCaptions.setShadowLayer(radius, offset, offset, edgeColor);
     }
 
     private void translateSubtitleCues(androidx.media3.common.text.CueGroup cueGroup) {
