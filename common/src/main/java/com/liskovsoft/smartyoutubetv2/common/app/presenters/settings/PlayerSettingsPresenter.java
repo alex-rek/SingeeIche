@@ -83,6 +83,7 @@ public class PlayerSettingsPresenter extends BasePresenter<Void> {
         //appendPlayerExitCategory(settingsPresenter);
         appendSleepTimerCategory(settingsPresenter);
         appendMiscCategory(settingsPresenter);
+        appendFullscreenClockSizeCategory(settingsPresenter);
         appendDeveloperCategory(settingsPresenter);
         if (sPhoneExtraRows != null) {
             sPhoneExtraRows.append(getContext(), settingsPresenter);
@@ -514,6 +515,22 @@ public class PlayerSettingsPresenter extends BasePresenter<Void> {
                 mPlayerTweaksData.isQueueRespectsPlaybackMode()));
 
         settingsPresenter.appendCheckedCategory(getContext().getString(R.string.player_other), options);
+    }
+
+    private void appendFullscreenClockSizeCategory(AppDialogPresenter settingsPresenter) {
+        List<OptionItem> options = new ArrayList<>();
+        addFullscreenClockSizeOption(options, 14, R.string.player_clock_size_small);
+        addFullscreenClockSizeOption(options, 18, R.string.player_clock_size_medium);
+        addFullscreenClockSizeOption(options, 22, R.string.player_clock_size_large);
+        addFullscreenClockSizeOption(options, 26, R.string.player_clock_size_extra_large);
+        settingsPresenter.appendCategory(OptionCategory.from(R.string.player_clock_size,
+                OptionCategory.TYPE_RADIO_LIST, getContext().getString(R.string.player_clock_size), options));
+    }
+
+    private void addFullscreenClockSizeOption(List<OptionItem> options, int sizeSp, int titleResId) {
+        options.add(UiOptionItem.from(getContext().getString(titleResId),
+                option -> mPlayerData.setFullscreenClockSizeSp(sizeSp),
+                mPlayerData.getFullscreenClockSizeSp() == sizeSp));
     }
 
     private void appendDeveloperCategory(AppDialogPresenter settingsPresenter) {

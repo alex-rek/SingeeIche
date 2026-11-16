@@ -60,6 +60,7 @@ public class PlayerData extends DataChangeBase implements PlayerConstants, Profi
     private int mUiHideTimeoutSec;
     private boolean mIsSeekConfirmPauseEnabled;
     private boolean mIsClockEnabled;
+    private int mFullscreenClockSizeSp = 18;
     private boolean mIsGlobalClockEnabled;
     private boolean mIsRemainingTimeEnabled;
     private int mBackgroundMode;
@@ -214,6 +215,18 @@ public class PlayerData extends DataChangeBase implements PlayerConstants, Profi
 
     public void setClockEnabled(boolean enable) {
         mIsClockEnabled = enable;
+        persistState();
+    }
+
+    public int getFullscreenClockSizeSp() {
+        return mFullscreenClockSizeSp;
+    }
+
+    public void setFullscreenClockSizeSp(int sizeSp) {
+        if (sizeSp != 14 && sizeSp != 18 && sizeSp != 22 && sizeSp != 26) {
+            sizeSp = 18;
+        }
+        mFullscreenClockSizeSp = sizeSp;
         persistState();
     }
 
@@ -955,6 +968,11 @@ public class PlayerData extends DataChangeBase implements PlayerConstants, Profi
         mLastAudioLanguages = Helpers.parseStrList(split, 60);
         mIsVideoFlipEnabled = Helpers.parseBoolean(split, 61, false);
         mIsAudioDelayEnabled = Helpers.parseBoolean(split, 62, false);
+        mFullscreenClockSizeSp = Helpers.parseInt(split, 63, 18);
+        if (mFullscreenClockSizeSp != 14 && mFullscreenClockSizeSp != 18
+                && mFullscreenClockSizeSp != 22 && mFullscreenClockSizeSp != 26) {
+            mFullscreenClockSizeSp = 18;
+        }
 
         if (speeds != null) {
             for (String speedSpec : speeds) {
@@ -992,7 +1010,7 @@ public class PlayerData extends DataChangeBase implements PlayerConstants, Profi
                 mIsNumberKeySeekEnabled, mIsSkip24RateEnabled, mAfrPauseMs, mIsLiveChatEnabled, mLastSubtitleFormats, mLastSpeed, mRotationAngle,
                 mZoomPercents, mPlaybackMode, mAudioLanguage, mSubtitleLanguage, mEnabledSubtitlesPerChannel, mIsSubtitlesPerChannelEnabled,
                 mIsSpeedPerChannelEnabled, Helpers.mergeArray(mSpeeds.values().toArray()), mPitch, mIsSkipShortsEnabled, mLastAudioLanguages,
-                mIsVideoFlipEnabled, mIsAudioDelayEnabled
+                mIsVideoFlipEnabled, mIsAudioDelayEnabled, mFullscreenClockSizeSp
         ));
     }
 

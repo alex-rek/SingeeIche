@@ -143,7 +143,12 @@
     <string name="playlists_style">Стиль раздела Плейлисты</string>
     <string name="playlists_style_grid">Сетка</string>
     <string name="playlists_style_rows">Строки</string>
-    <string name="player_show_clock">Отображать часы в панели управления</string>
+    <string name="player_show_clock">Показывать часы во весь экран</string>
+    <string name="player_clock_size">Размер часов</string>
+    <string name="player_clock_size_small">Маленький (14 sp)</string>
+    <string name="player_clock_size_medium">Средний (18 sp)</string>
+    <string name="player_clock_size_large">Большой (22 sp)</string>
+    <string name="player_clock_size_extra_large">Очень большой (26 sp)</string>
     <string name="player_show_remaining_time">Отображать оставшееся время в панели управления</string>
     <string name="player_show_ending_time">Отображать время окончания в панели управления</string>
     <string name="open_channel_uploads">Открыть загрузки</string>

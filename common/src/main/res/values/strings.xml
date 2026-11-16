@@ -163,7 +163,12 @@
     <string name="playlists_style">Playlists section style</string>
     <string name="playlists_style_grid">Grid</string>
     <string name="playlists_style_rows">Rows</string>
-    <string name="player_show_clock">Show clock in controls bar</string>
+    <string name="player_show_clock">Show clock in fullscreen</string>
+    <string name="player_clock_size">Fullscreen clock size</string>
+    <string name="player_clock_size_small">Small (14 sp)</string>
+    <string name="player_clock_size_medium">Medium (18 sp)</string>
+    <string name="player_clock_size_large">Large (22 sp)</string>
+    <string name="player_clock_size_extra_large">Extra large (26 sp)</string>
     <string name="player_show_remaining_time">Show remaining time in controls bar</string>
     <string name="player_show_ending_time">Show ending time in controls bar</string>
     <string name="open_channel_uploads">Open channel uploads</string>

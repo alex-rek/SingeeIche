@@ -25,6 +25,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.text.TextUtils;
+import android.text.format.DateFormat;
 import android.util.Rational;
 import android.util.SparseIntArray;
 import android.util.TypedValue;
@@ -149,6 +150,7 @@ import com.newtube.mobile.ui.dialog.MaxHeightRecyclerView;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Formatter;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -197,6 +199,17 @@ public class MobilePlaybackActivity extends MobileActivity
     @Nullable private ImageButton mWindowButton;
     @Nullable private TextView mTranslatedCaptions;
     private final OnDataChange mTranslatedCaptionStyleListener = this::applyTranslatedCaptionStyle;
+    @Nullable private TextView mFullscreenClock;
+    private final OnDataChange mFullscreenClockSettingsListener = this::updateFullscreenClock;
+    private final Runnable mFullscreenClockTick = new Runnable() {
+        @Override
+        public void run() {
+            TextView clock = mFullscreenClock;
+            if (clock == null || clock.getVisibility() != View.VISIBLE) return;
+            clock.setText(DateFormat.getTimeFormat(MobilePlaybackActivity.this).format(new Date()));
+            clock.postDelayed(this, 1_000L);
+        }
+    };
     private int mCaptionTranslationGeneration;
     private TextView mZoomHintView;
     private DoubleTapPlayerViewImpl mPlayerView;
@@ -691,6 +704,7 @@ public class MobilePlaybackActivity extends MobileActivity
             mWindowButton.setOnClickListener(v -> enterPipFromMenu());
         }
         setupTranslatedCaptionsView();
+        setupFullscreenClockView();
         mShortsBottomNav = findViewById(R.id.mobile_shorts_bottom_nav);
         if (mShortsBottomNav != null) {
             mShortsBottomNav.getMenu().add(0, 1, 0, R.string.header_home).setIcon(R.drawable.ic_nav_home);
@@ -1210,6 +1224,7 @@ public class MobilePlaybackActivity extends MobileActivity
                 mTitleView.setVisibility(View.GONE);
             }
         }
+        updateFullscreenClock();
     }
 
     /**
@@ -1758,6 +1773,10 @@ public class MobilePlaybackActivity extends MobileActivity
 
     @Override
     protected void onDestroy() {
+        if (mFullscreenClock != null) {
+            mFullscreenClock.removeCallbacks(mFullscreenClockTick);
+        }
+        PlayerData.instance(this).removeOnChange(mFullscreenClockSettingsListener);
         DownloadRegistry.instance(this).removeListener(mDownloadsListener);
         MobileSheets.setPlayerShown(false, false);
         cancelAutoHide();
@@ -2834,6 +2853,7 @@ public class MobilePlaybackActivity extends MobileActivity
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig);
 
         mIsInPip = isInPictureInPictureMode;
+        updateFullscreenClock();
         mPipStateStale = false;
         mPipLayoutHold = true; // entering, or on the way out until onResume
         mPipEnterPending = false;
@@ -6833,6 +6853,41 @@ public class MobilePlaybackActivity extends MobileActivity
         mTranslatedCaptions = captions;
         PlayerData.instance(this).setOnChange(mTranslatedCaptionStyleListener);
         applyTranslatedCaptionStyle();
+    }
+
+    private void setupFullscreenClockView() {
+        if (mVideoArea == null || mFullscreenClock != null) return;
+        TextView clock = new TextView(this);
+        clock.setTextColor(Color.WHITE);
+        clock.setShadowLayer(dp(3), 0, dp(1), Color.BLACK);
+        clock.setGravity(Gravity.CENTER);
+        clock.setPadding(dp(8), dp(4), dp(8), dp(4));
+        clock.setClickable(false);
+        clock.setFocusable(false);
+        clock.setVisibility(View.GONE);
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
+                Gravity.TOP | Gravity.END);
+        lp.setMargins(0, dp(12), dp(14), 0);
+        clock.setElevation(dp(3));
+        mVideoArea.addView(clock, lp);
+        mFullscreenClock = clock;
+        PlayerData.instance(this).setOnChange(mFullscreenClockSettingsListener);
+        updateFullscreenClock();
+    }
+
+    private void updateFullscreenClock() {
+        TextView clock = mFullscreenClock;
+        if (clock == null) return;
+        clock.removeCallbacks(mFullscreenClockTick);
+        PlayerData playerData = PlayerData.instance(this);
+        boolean fullscreen = mShortsMode
+                || layoutOrientation() == Configuration.ORIENTATION_LANDSCAPE;
+        boolean show = playerData.isClockEnabled() && fullscreen && !mIsInPip;
+        clock.setVisibility(show ? View.VISIBLE : View.GONE);
+        if (!show) return;
+        clock.setTextSize(TypedValue.COMPLEX_UNIT_SP, playerData.getFullscreenClockSizeSp());
+        mFullscreenClockTick.run();
     }
 
     /** Keep the translated-caption overlay consistent with the subtitle style selected in settings. */
