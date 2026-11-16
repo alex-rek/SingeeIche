@@ -1,6 +1,24 @@
 {
   "package": {
-    "downloadUrl": "https://github.com/alex-rek/SingeeIche/releases/download/v0.1.8/SingeeIche_0.1.8_universal.apk"
+    "downloadUrl": "https://github.com/alex-rek/SingeeIche/releases/download/v0.1.10/SingeeIche_0.1.10_universal.apk"
+  },
+  "0.1.10": {
+    "versionCode": 11,
+    "changelog": [
+      "Added configurable clock to fullscreen playback."
+    ],
+    "changelog_ru": [
+      "Добавлены часы в полноэкранном плеере с настройкой включения и размера."
+    ]
+  },
+  "0.1.9": {
+    "versionCode": 10,
+    "changelog": [
+      "Translated subtitle captions follow the selected subtitle style."
+    ],
+    "changelog_ru": [
+      "Переводимые субтитры используют выбранный стиль."
+    ]
   },
   "0.1.8": {
     "versionCode": 9,
